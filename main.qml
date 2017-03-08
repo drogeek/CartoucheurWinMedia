@@ -11,7 +11,7 @@ ApplicationWindow {
 
     TableView{
         id: view
-        anchors.centerIn: parent
+        anchors.fill: parent
         clip: true
         model: myModel
     }
