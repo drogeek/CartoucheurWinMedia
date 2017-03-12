@@ -1,13 +1,9 @@
-#include <QApplication>
+#include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QSqlQueryModel>
-#include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlDatabase>
 #include <QDebug>
 #include <QtCore>
-#include <QQmlContext>
-#include <QTableView>
 #include "cartridgemodel.h"
 #define __WINMEDIA_DEBUG
 
@@ -15,7 +11,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
 #ifdef __linux__
     const QString DRIVER = "ODBC Driver 13 for SQL Server";
@@ -49,12 +45,11 @@ int main(int argc, char *argv[])
 
     if(db.open()){
         qDebug() << "Opening of DB successful";
-
     }
     else
         qDebug() << db.lastError();
 
-    qmlRegisterType<CartridgeModel>("fr.univtln.jguiennet299",1,0,"CartridgeModel");
+    qmlRegisterType<CartridgeModel>("org.winmedia.guiennet",1,0,"CartridgeModel");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
