@@ -36,7 +36,7 @@ private:
     /*
      * Attributes
      */
-    QList<QHash<RoleNames,QVariant>> *m_data;
+    QList<QHash<RoleNames,QVariant>> m_data;
     QHash<int,QByteArray> m_roleNames;
 
     /*
