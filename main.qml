@@ -17,15 +17,16 @@ ApplicationWindow {
         model: CartridgeModel{}
         delegate: Column{
             Text{
-                text: model.performer
+                text: model.performer ? model.performer : "…"
             }
 
             Text{
-                text: model.title
+                text: model.title ? model.title : "…"
             }
 
             Text{
-                text: model.duration
+                property var min: Math.ceil(model.duration/3600)
+                text: min ? min + "min " : "0min0sec"
             }
         }
     }

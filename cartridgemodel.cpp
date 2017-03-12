@@ -29,8 +29,8 @@ void CartridgeModel::listFromSQL(QString queryString){
 
         QHash<RoleNames,QVariant> hash;
         hash.insert(PERFORMER,query.value(1));
-        hash.insert(DURATION,query.value(2));
-        hash.insert(TITLE,query.value(3));
+        hash.insert(TITLE,query.value(2));
+        hash.insert(DURATION,query.value(3));
         m_data.replace(position, hash);
     }
 }
