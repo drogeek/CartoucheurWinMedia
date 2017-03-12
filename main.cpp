@@ -50,11 +50,11 @@ int main(int argc, char *argv[])
     if(db.open()){
         qDebug() << "Opening of DB successful";
 
-        qmlRegisterType<CartridgeModel>("fr.univtln.jguiennet299",1,0,"CartridgeModel");
     }
     else
         qDebug() << db.lastError();
 
+    qmlRegisterType<CartridgeModel>("fr.univtln.jguiennet299",1,0,"CartridgeModel");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
