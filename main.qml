@@ -15,7 +15,18 @@ ApplicationWindow {
         anchors.fill: parent
         clip: true
         model: CartridgeModel{}
-        delegate: Text{
+        delegate: Column{
+            Text{
+                text: model.performer
+            }
+
+            Text{
+                text: model.title
+            }
+
+            Text{
+                text: model.duration
+            }
         }
     }
 

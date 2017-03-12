@@ -49,9 +49,6 @@ int main(int argc, char *argv[])
 
     if(db.open()){
         qDebug() << "Opening of DB successful";
-//    QTableView view;
-//    view.setModel(&model);
-//    view.show();
 
         qmlRegisterType<CartridgeModel>("fr.univtln.jguiennet299",1,0,"CartridgeModel");
     }
