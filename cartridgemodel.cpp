@@ -1,7 +1,7 @@
 #include "cartridgemodel.h"
 
 const QString CartridgeModel::QUERY="\
-            SELECT Position,Performer,Title,Cartridge.Duration\
+            SELECT Position,Performer,Title,Cartridge.Duration,ICartridge\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
@@ -13,12 +13,15 @@ CartridgeModel::CartridgeModel(QObject *parent)
     m_roleNames[PERFORMER]= "performer";
     m_roleNames[DURATION]= "duration";
     m_roleNames[TITLE]= "title";
+    m_roleNames[ID]= "id";
 
-    listFromSQL(QUERY);
+    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&listFromSQL);
+    listFromSQL();
 }
 
-void CartridgeModel::listFromSQL(QString queryString){
-    QSqlQuery query(queryString);
+void CartridgeModel::listFromSQL(){
+    qDebug() << "Data updated";
+    QSqlQuery query(QUERY);
 
     int position, maxPosition=0;
     while(query.next()){
@@ -31,8 +34,11 @@ void CartridgeModel::listFromSQL(QString queryString){
         hash.insert(PERFORMER,query.value(1));
         hash.insert(TITLE,query.value(2));
         hash.insert(DURATION,query.value(3));
+        hash.insert(ID,query.value(4));
         m_data.replace(position, hash);
     }
+        //TODO: send signal that data has changed
+    emit dataChanged(index(0,0),index(m_data.count()-1,0));
 }
 
 /* iteratively fill holes in the list for a gridView with one
@@ -62,7 +68,6 @@ QVariant CartridgeModel::data(const QModelIndex &index, int role) const
     if(position<0 || position >= m_data.count()){
         return QVariant();
     }
-    qDebug() << "row=" << index.row();
 
     QHash<RoleNames,QVariant> dataAtPosition = m_data.at(position);
 

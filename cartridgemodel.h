@@ -4,6 +4,8 @@
 #include <QAbstractListModel>
 #include <QSqlQuery>
 #include <QDebug>
+#include <QModelIndex>
+#include "datapuller.h"
 // /!\ Redefine NUMBER_OF_ROLES if you add more roles into RoleNames
 #define NUMBER_OF_ROLES 3
 /* need this to define how many elements will populate m_data
@@ -21,7 +23,8 @@ public:
     enum RoleNames{
         PERFORMER = Qt::UserRole,
         TITLE = Qt::UserRole+1,
-        DURATION = Qt::UserRole+2
+        DURATION = Qt::UserRole+2,
+        ID = Qt::UserRole+3
     };
 
     explicit CartridgeModel(QObject *parent = 0);
@@ -32,18 +35,20 @@ public:
 
 protected:
     QHash<int,QByteArray> roleNames() const override;
+
 private:
     /*
      * Attributes
      */
     QList<QHash<RoleNames,QVariant>> m_data;
     QHash<int,QByteArray> m_roleNames;
+    DataPuller m_updater;
 
     /*
      * Methods
      */
-    void listFromSQL(QString queryString);
     void fillHolesInList(int maxPosition);
+    void listFromSQL();
 };
 
 #endif // CARTRIDGEMODEL_H

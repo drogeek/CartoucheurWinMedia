@@ -5,37 +5,133 @@ import QtQuick.Layouts 1.0
 import org.winmedia.guiennet 1.0
 
 ApplicationWindow {
+    id: root
     visible: true
     width: 640
     height: 480
     title: qsTr("Cartridge")
 
+    menuBar: MenuBar{
+        Menu{
+            title: "File"
+            MenuItem{
+                text: "Settings"
+                onTriggered: console.log("Propreties")
+            }
+        }
+    }
+
+    statusBar: StatusBar{
+        Label { id: labelStatus; text: qsTr("status") }
+    }
+
     GridView{
-        id: view
+        property var cpt: 0
+        id:grid
         anchors.fill: parent
+        anchors.margins: 10
         clip: true
-        cellHeight: parent.height/3
+        cellWidth: 150
         flow: GridView.FlowTopToBottom
         model: CartridgeModel{}
         delegate: cartridgeDelegate
-        anchors.margins: 5
+        focus: true
     }
 
     Component{
         id: cartridgeDelegate
         Rectangle {
+            id: backgroundCell
+            color: !GridView.isCurrentItem ? "#888888" : "#EF3834"
+            height: grid.cellHeight-2
+            width: grid.cellWidth-2
+            radius: 5
+            gradient: Gradient{
+                GradientStop{position: 0.0; color: "#AAAAAA"}
+                GradientStop{position: 1.0; color: "#DDDDDD"}
+            }
+            border.color: Qt.darker(color)
+            states: [
+                State {
+                    name: "ZOOM"
+                    onCompleted: console.log("ZOOM state")
+                    PropertyChanges {
+                        target: backgroundCell
+                        z: 100
+                        height: grid.height
+                        width: grid.width
+                        color: "green"
+                    }
+                    PropertyChanges {
+                        target: backgroundCell.GridView.view
+                        explicit: true
+                        contentY: backgroundCell.y
+                        contentX: backgroundCell.x
+                        interactive: false
+                    }
+
+                },
+
+                State {
+                    name: "TARGET"
+                    PropertyChanges {
+                        target: backgroundCell
+                        color: "pink"
+                    }
+                }
+            ]
+
+            MouseArea{
+                anchors.fill: parent
+                onPressAndHold:{
+                    if (backgroundCell.state == ""){
+                        labelStatus.text=qsTr("status")
+                        backgroundCell.state = "ZOOM"
+                    }
+                }
+                onClicked:{
+                    if(backgroundCell.state == "ZOOM"){
+                        backgroundCell.state = ""
+                    }
+                    //TODO: activate moving around
+                }
+            }
+
             Column{
+                width: parent.width
                 Text{
-                    text: model.performer ? model.performer : "…"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: performer ? performer : "…"
                 }
 
                 Text{
-                    text: model.title ? model.title : "…"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: title ? title : "…"
                 }
 
                 Text{
-                    property var min: Math.ceil(model.duration/3600)
-                    text: min ? min + "min " : "0min0sec"
+                    property var min: Math.ceil(duration/3600)
+                    text: min ? min + "min " : "…"
+                }
+            }
+
+            Row{
+                anchors.bottom: backgroundCell.bottom
+                Rectangle{
+                    color: Qt.darker(backgroundCell.color)
+                    width: 20
+                    height: 20
+                    radius: 5
+                    anchors.bottom: parent.bottom
+                    Text{
+                        anchors.centerIn: parent
+                        text: index+1
+                    }
+                }
+
+                Button{
+                    text: ">"
+                    onClicked: console.log(id)
                 }
             }
 
