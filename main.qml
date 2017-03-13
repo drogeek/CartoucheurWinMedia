@@ -14,20 +14,31 @@ ApplicationWindow {
         id: view
         anchors.fill: parent
         clip: true
+        cellHeight: parent.height/3
+        flow: GridView.FlowTopToBottom
         model: CartridgeModel{}
-        delegate: Column{
-            Text{
-                text: model.performer ? model.performer : "…"
+        delegate: cartridgeDelegate
+        anchors.margins: 5
+    }
+
+    Component{
+        id: cartridgeDelegate
+        Rectangle {
+            Column{
+                Text{
+                    text: model.performer ? model.performer : "…"
+                }
+
+                Text{
+                    text: model.title ? model.title : "…"
+                }
+
+                Text{
+                    property var min: Math.ceil(model.duration/3600)
+                    text: min ? min + "min " : "0min0sec"
+                }
             }
 
-            Text{
-                text: model.title ? model.title : "…"
-            }
-
-            Text{
-                property var min: Math.ceil(model.duration/3600)
-                text: min ? min + "min " : "0min0sec"
-            }
         }
     }
 
