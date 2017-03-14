@@ -27,24 +27,29 @@ ApplicationWindow {
         }
     }
 
-    GridView{
-        property var cpt: 0
+    GridViewCartridge{
         id:grid
         anchors.fill: parent
         anchors.margins: 10
         clip: true
         cellWidth: 150
-        flow: (root.width < root.height) ? GridView.FlowTopToBottom : GridView.FlowLeftToRight
+        cellHeight: 85
+        flow: GridView.FlowTopToBottom
         model: CartridgeModel{}
         delegate: cartridgeDelegate
+        onDimensionChanged: console.log("dimension changed:("+xIndex+","+yIndex+")")
+
         states: State{
             name: "ITEM_SELECTED_FOR_MOVE"
             onCompleted: console.log("STATE ITEM_SELECTED_FOR_MOVE")
             PropertyChanges {
                 target: grid.currentItem
                 border.width: 2
-
             }
+        }
+
+        add: Transition {
+            NumberAnimation{ property: "scale"; from: 0; to: 1.0; duration: 400 }
         }
     }
 
@@ -99,20 +104,16 @@ ApplicationWindow {
 //                        backgroundCell.state = "ZOOM"
 //                    }
 //                }
-//                onClicked:{
-//                    if(backgroundCell.state == "ZOOM"){
-//                        backgroundCell.state = ""
-//                    }
                 onClicked:{
+                    if(grid.state == "ITEM_SELECTED_FOR_MOVE"){
+                        grid.state = ""
+                    }
+                }
+                onPressAndHold:{
                     grid.currentIndex = index
                     if(grid.state == ""){
                         grid.state = "ITEM_SELECTED_FOR_MOVE"
                     }
-                    else if(grid.state == "ITEM_SELECTED_FOR_MOVE"){
-                        grid.state = ""
-                        //TODO: activate moving around
-                    }
-
                 }
             }
 

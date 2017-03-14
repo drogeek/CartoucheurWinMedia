@@ -78,3 +78,14 @@ QHash<int,QByteArray> CartridgeModel::roleNames() const
 {
     return m_roleNames;
 }
+
+void CartridgeModel::fitToDimension(int x, int y){
+    int nbrBlockInView=x*y, nbrCurrentData=m_data.count();
+    if(nbrBlockInView > nbrCurrentData){
+        emit beginInsertRows(QModelIndex(),nbrCurrentData,nbrBlockInView);
+        while(m_data.count()<nbrBlockInView)
+            m_data << QHash<RoleNames,QVariant>();
+        qDebug() << m_data.count();
+        emit endInsertRows();
+    }
+}
