@@ -22,7 +22,9 @@ ApplicationWindow {
     }
 
     statusBar: StatusBar{
-        Label { id: labelStatus; text: qsTr("status") }
+        Label {
+            text: qsTr("status")
+        }
     }
 
     GridView{
@@ -32,17 +34,25 @@ ApplicationWindow {
         anchors.margins: 10
         clip: true
         cellWidth: 150
-        flow: GridView.FlowTopToBottom
+        flow: (root.width < root.height) ? GridView.FlowTopToBottom : GridView.FlowLeftToRight
         model: CartridgeModel{}
         delegate: cartridgeDelegate
-        focus: true
+        states: State{
+            name: "ITEM_SELECTED_FOR_MOVE"
+            onCompleted: console.log("STATE ITEM_SELECTED_FOR_MOVE")
+            PropertyChanges {
+                target: grid.currentItem
+                border.width: 2
+
+            }
+        }
     }
 
     Component{
         id: cartridgeDelegate
         Rectangle {
             id: backgroundCell
-            color: !GridView.isCurrentItem ? "#888888" : "#EF3834"
+            color: "#888888"
             height: grid.cellHeight-2
             width: grid.cellWidth-2
             radius: 5
@@ -51,49 +61,58 @@ ApplicationWindow {
                 GradientStop{position: 1.0; color: "#DDDDDD"}
             }
             border.color: Qt.darker(color)
-            states: [
-                State {
-                    name: "ZOOM"
-                    onCompleted: console.log("ZOOM state")
-                    PropertyChanges {
-                        target: backgroundCell
-                        z: 100
-                        height: grid.height
-                        width: grid.width
-                        color: "green"
-                    }
-                    PropertyChanges {
-                        target: backgroundCell.GridView.view
-                        explicit: true
-                        contentY: backgroundCell.y
-                        contentX: backgroundCell.x
-                        interactive: false
-                    }
+//            states: [
+//                State {
+//                    name: "ZOOM"
+//                    onCompleted: console.log("ZOOM state")
+//                    PropertyChanges {
+//                        target: backgroundCell
+//                        z: 100
+//                        height: grid.height
+//                        width: grid.width
+//                        color: "green"
+//                    }
+//                    PropertyChanges {
+//                        target: backgroundCell.GridView.view
+//                        explicit: true
+//                        contentY: backgroundCell.y
+//                        contentX: backgroundCell.x
+//                        interactive: false
+//                    }
 
-                },
+//                },
 
-                State {
-                    name: "TARGET"
-                    PropertyChanges {
-                        target: backgroundCell
-                        color: "pink"
-                    }
-                }
-            ]
+//                State {
+//                    name: "TARGET"
+//                    PropertyChanges {
+//                        target: backgroundCell
+//                        color: "pink"
+//                    }
+//                }
+//            ]
 
             MouseArea{
                 anchors.fill: parent
-                onPressAndHold:{
-                    if (backgroundCell.state == ""){
-                        labelStatus.text=qsTr("status")
-                        backgroundCell.state = "ZOOM"
-                    }
-                }
+//                onPressAndHold:{
+//                    if (backgroundCell.state == ""){
+//                        labelStatus.text=qsTr("status")
+//                        backgroundCell.state = "ZOOM"
+//                    }
+//                }
+//                onClicked:{
+//                    if(backgroundCell.state == "ZOOM"){
+//                        backgroundCell.state = ""
+//                    }
                 onClicked:{
-                    if(backgroundCell.state == "ZOOM"){
-                        backgroundCell.state = ""
+                    grid.currentIndex = index
+                    if(grid.state == ""){
+                        grid.state = "ITEM_SELECTED_FOR_MOVE"
                     }
-                    //TODO: activate moving around
+                    else if(grid.state == "ITEM_SELECTED_FOR_MOVE"){
+                        grid.state = ""
+                        //TODO: activate moving around
+                    }
+
                 }
             }
 

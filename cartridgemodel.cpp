@@ -15,7 +15,7 @@ CartridgeModel::CartridgeModel(QObject *parent)
     m_roleNames[TITLE]= "title";
     m_roleNames[ID]= "id";
 
-    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&listFromSQL);
+    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::listFromSQL);
     listFromSQL();
 }
 
