@@ -41,15 +41,10 @@ void CartridgeModel::listFromSQL(){
     emit dataChanged(index(0,0),index(m_data.count()-1,0));
 }
 
-/* iteratively fill holes in the list for a gridView with one
- * constant dimension of size MAX_LINES: ugly but I don't know
- * another way to deal with how the view is filled if there is
- * nothing
- */
+/* iteratively fill holes in the list */
 void CartridgeModel::fillHolesInList(int maxPosition){
-    int toIndex = (maxPosition/MAX_LINES+1)*MAX_LINES;
     int indexLast = m_data.count();
-    for(int i=0; i<toIndex-indexLast;i++){
+    for(int i=0; i<maxPosition-indexLast+1;i++){
         m_data << QHash<RoleNames,QVariant>();
     }
 }

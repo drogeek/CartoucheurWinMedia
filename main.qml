@@ -2,6 +2,8 @@ import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.0
+
+import "qrc:/LogicUI.js" as LogicUI
 import org.winmedia.guiennet 1.0
 
 ApplicationWindow {
@@ -27,7 +29,7 @@ ApplicationWindow {
         }
     }
 
-    GridViewCartridge{
+    GridView{
         id:grid
         anchors.fill: parent
         anchors.margins: 10
@@ -38,19 +40,36 @@ ApplicationWindow {
         model: CartridgeModel{}
         delegate: cartridgeDelegate
         onDimensionChanged: console.log("dimension changed:("+xIndex+","+yIndex+")")
+        onWidthChanged: LogicUI.computeDimension()
 
-        states: State{
-            name: "ITEM_SELECTED_FOR_MOVE"
-            onCompleted: console.log("STATE ITEM_SELECTED_FOR_MOVE")
-            PropertyChanges {
-                target: grid.currentItem
-                border.width: 2
-            }
+        signal dimensionChanged(int xIndex, int yIndex)
+        Connections{
+            onDimensionChanged: grid.model.fitToDimension(xIndex,yIndex)
         }
+
+        states: [
+            State{
+                name: "MOVEMODE"
+                onCompleted: console.log("STATE MOVEMODE")
+            }
+        ]
+
+        Component.onCompleted: {
+            LogicUI.computeDimension()
+        }
+
+//        populate: Transition{
+//            NumberAnimation { property: "scale"; duration: 1000 }
+//        }
 
         add: Transition {
             NumberAnimation{ property: "scale"; from: 0; to: 1.0; duration: 400 }
         }
+
+        displaced: Transition{
+            NumberAnimation { property:"scale"; to:1 }
+        }
+
     }
 
     Component{
@@ -61,58 +80,81 @@ ApplicationWindow {
             height: grid.cellHeight-2
             width: grid.cellWidth-2
             radius: 5
+
+            property color gradient1: "#AAAAAA"
+            property color gradient2: "#DDDDDD"
             gradient: Gradient{
-                GradientStop{position: 0.0; color: "#AAAAAA"}
-                GradientStop{position: 1.0; color: "#DDDDDD"}
+                GradientStop{position: 0.0; color: gradient1}
+                GradientStop{position: 1.0; color: gradient2}
             }
+
+            Gradient{
+                id: selectableGradient
+                GradientStop{position: 0.0; color: Qt.darker(gradient1)}
+                GradientStop{position: 1.0; color: Qt.darker(gradient2)}
+            }
+
             border.color: Qt.darker(color)
-//            states: [
-//                State {
-//                    name: "ZOOM"
-//                    onCompleted: console.log("ZOOM state")
-//                    PropertyChanges {
-//                        target: backgroundCell
-//                        z: 100
-//                        height: grid.height
-//                        width: grid.width
-//                        color: "green"
-//                    }
-//                    PropertyChanges {
-//                        target: backgroundCell.GridView.view
-//                        explicit: true
-//                        contentY: backgroundCell.y
-//                        contentX: backgroundCell.x
-//                        interactive: false
-//                    }
 
-//                },
+            SequentialAnimation{
+                loops: Animation.Infinite
+                running: grid.state == "MOVEMODE" || grid.state == "ITEMSELECTEDFORMOVE"
+                NumberAnimation{
+                    target: backgroundCell
+                    property: "scale"; to: 0.95; duration: 300
+                }
+                NumberAnimation{
+                    target: backgroundCell
+                    property: "scale"; to: 1; duration: 1000; easing.type: Easing.OutBounce
+                }
+            }
 
-//                State {
-//                    name: "TARGET"
-//                    PropertyChanges {
-//                        target: backgroundCell
-//                        color: "pink"
-//                    }
-//                }
-//            ]
+            states: [
+                State {
+                    name: "SELECTABLE"
+                    when: grid.state == "MOVEMODE"
+                    onCompleted: console.log("MODE SELECTABLE")
+                    PropertyChanges {
+                        target: backgroundCell
+                        gradient: selectableGradient
+                    }
+                },
+                State {
+                    name: "ITEMSELECTEDFORMOVE"
+                    onCompleted: console.log("MODE ITEMSELECTEDFORMOVE")
+                    PropertyChanges{
+                        target: grid.currentItem
+                        border.width: 3
+                    }
+                },
+                State{
+                    onCompleted: console.log("MODE VALIDATIONMODE")
+                    name: "VALIDATIONMOVE"
+                }
+
+            ]
+
+            PropertyAnimation{
+                running: grid.state == ""
+                target: backgroundCell
+                property: "scale"; to: 1; duration: 300
+            }
 
             MouseArea{
                 anchors.fill: parent
-//                onPressAndHold:{
-//                    if (backgroundCell.state == ""){
-//                        labelStatus.text=qsTr("status")
-//                        backgroundCell.state = "ZOOM"
-//                    }
-//                }
                 onClicked:{
-                    if(grid.state == "ITEM_SELECTED_FOR_MOVE"){
-                        grid.state = ""
+                    console.log(backgroundCell.state)
+                    if(backgroundCell.state == "SELECTABLE"){
+                        grid.currentIndex = index
+                        grid.currentItem.state = "ITEMSELECTEDFORMOVE"
                     }
                 }
                 onPressAndHold:{
-                    grid.currentIndex = index
                     if(grid.state == ""){
-                        grid.state = "ITEM_SELECTED_FOR_MOVE"
+                        grid.state = "MOVEMODE"
+                    }
+                    else if(grid.state == "MOVEMODE"){
+                        grid.state = ""
                     }
                 }
             }
@@ -121,17 +163,19 @@ ApplicationWindow {
                 width: parent.width
                 Text{
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: performer ? performer : "…"
+                    text: performer ? "<b>"+performer+"</b>" : ""
                 }
 
                 Text{
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: title ? title : "…"
+                    text: title ? title : ""
                 }
 
                 Text{
                     property var min: Math.ceil(duration/3600)
-                    text: min ? min + "min " : "…"
+                    font.family: "Helvetica"
+                    font.pointSize: 18
+                    text: min ? "<b><i>"+ min + "</b></i><i>min</i> " : ""
                 }
             }
 

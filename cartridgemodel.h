@@ -6,14 +6,6 @@
 #include <QDebug>
 #include <QModelIndex>
 #include "datapuller.h"
-// /!\ Redefine NUMBER_OF_ROLES if you add more roles into RoleNames
-#define NUMBER_OF_ROLES 3
-/* need this to define how many elements will populate m_data
- * because in the view data grows from top to bottom until it reaches
- * MAX_LINES. It's very ugly, but didn't figure out how to deal with
- * QAbstractTableModel
- */
-#define MAX_LINES 3
 
 class CartridgeModel : public QAbstractListModel
 {
