@@ -36,6 +36,9 @@ public:
 protected:
     QHash<int,QByteArray> roleNames() const override;
 
+public slots:
+    void fitToDimension(int x, int y);
+
 private:
     /*
      * Attributes
