@@ -29,18 +29,37 @@ ApplicationWindow {
         }
     }
 
+    toolBar: TabBar{
+        id: tab
+        anchors.fill: parent
+        onCurrentIndexChanged: {
+            console.log("tab n°"+currentIndex+" selected")
+            grid.model.changePanel(currentIndex+1)
+            grid.state = ""
+        }
+
+        Repeater{
+            model: ["first","second","third","fourth","fifth"]
+            TabButton{
+                text: modelData
+                width: 100
+            }
+        }
+    }
+
     GridView{
         id:grid
         anchors.fill: parent
         anchors.margins: 10
         clip: true
-        cellWidth: 150
-        cellHeight: 85
-        flow: GridView.FlowTopToBottom
         model: CartridgeModel{}
+        cellWidth: width/model.widthModel
+        cellHeight: height/model.heightModel
+        onCellWidthChanged: console.log("cellWidth changed:"+cellWidth)
+        flow: GridView.FlowTopToBottom
         delegate: cartridgeDelegate
         onDimensionChanged: console.log("dimension changed:("+xIndex+","+yIndex+")")
-        onWidthChanged: LogicUI.computeDimension()
+//        onWidthChanged: LogicUI.computeDimension()
 
         signal dimensionChanged(int xIndex, int yIndex)
         Connections{
@@ -55,16 +74,12 @@ ApplicationWindow {
         ]
 
         Component.onCompleted: {
-            LogicUI.computeDimension()
+//            LogicUI.computeDimension()
         }
 
-//        populate: Transition{
-//            NumberAnimation { property: "scale"; duration: 1000 }
+//        add: Transition {
+//            NumberAnimation{ property: "scale"; from: 0; to: 1.0; duration: 400 }
 //        }
-
-        add: Transition {
-            NumberAnimation{ property: "scale"; from: 0; to: 1.0; duration: 400 }
-        }
 
         displaced: Transition{
             NumberAnimation { property:"scale"; to:1 }
@@ -76,25 +91,26 @@ ApplicationWindow {
         id: cartridgeDelegate
         Rectangle {
             id: backgroundCell
-            color: "#888888"
             height: grid.cellHeight-2
             width: grid.cellWidth-2
             radius: 5
 
-            property color gradient1: "#AAAAAA"
-            property color gradient2: "#DDDDDD"
-            gradient: Gradient{
-                GradientStop{position: 0.0; color: gradient1}
-                GradientStop{position: 1.0; color: gradient2}
-            }
+//            property color gradient1: "#AAAAAA"
+//            property color gradient2: "#DDDDDD"
+//            gradient: Gradient{
+//                GradientStop{position: 0.0; color: gradient1}
+//                GradientStop{position: 1.0; color: gradient2}
+//            }
 
-            Gradient{
-                id: selectableGradient
-                GradientStop{position: 0.0; color: Qt.darker(gradient1)}
-                GradientStop{position: 1.0; color: Qt.darker(gradient2)}
-            }
+//            Gradient{
+//                id: selectableGradient
+//                GradientStop{position: 0.0; color: Qt.darker(gradient1)}
+//                GradientStop{position: 1.0; color: Qt.darker(gradient2)}
+//            }
 
-            border.color: Qt.darker(color)
+//            border.color: Qt.darker(color)
+            color: "#FAFAFA"
+            border.color: "#CCCCCC"
 
             SequentialAnimation{
                 loops: Animation.Infinite
@@ -114,10 +130,10 @@ ApplicationWindow {
                     name: "SELECTABLE"
                     when: grid.state == "MOVEMODE"
                     onCompleted: console.log("MODE SELECTABLE")
-                    PropertyChanges {
-                        target: backgroundCell
-                        gradient: selectableGradient
-                    }
+//                    PropertyChanges {
+//                        target: backgroundCell
+//                        gradient: selectableGradient
+//                    }
                 },
                 State {
                     name: "ITEMSELECTEDFORMOVE"
@@ -193,8 +209,22 @@ ApplicationWindow {
                     }
                 }
 
-                Button{
-                    text: ">"
+                ToolButton{
+                    text: "►"
+                    onClicked: {
+                        console.log(grid.model.widthModel)
+                        grid.model.widthModel++;
+                    }
+                }
+                ToolButton{
+                    text: "◼"
+                    onClicked: {
+                        console.log(grid.model.heightModel)
+                        grid.model.heightModel++;
+                    }
+                }
+                ToolButton{
+                    text: "↺"
                     onClicked: console.log(id)
                 }
             }

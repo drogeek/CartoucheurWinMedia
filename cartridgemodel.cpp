@@ -1,11 +1,11 @@
 #include "cartridgemodel.h"
 
-const QString CartridgeModel::QUERY="\
+const QString CartridgeModel::QUERY=QString("\
             SELECT Position,Performer,Title,Cartridge.Duration,ICartridge\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
-            AND Panel.IPanel = 1";
+            AND Panel.IPanel = %1");
 
 CartridgeModel::CartridgeModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -15,15 +15,21 @@ CartridgeModel::CartridgeModel(QObject *parent)
     m_roleNames[TITLE]= "title";
     m_roleNames[ID]= "id";
 
+    //TODO: recover from file
+    setWidthModel(DEFAULT_WIDTH);
+    setHeightModel(DEFAULT_HEIGHT);
+    connect(this,&CartridgeModel::panelChanged,this,&CartridgeModel::load);
+//    connect(this,&CartridgeModel::widthModelChanged,this,&CartridgeModel::load);
+//    connect(this,&CartridgeModel::heightModelChanged,this,&CartridgeModel::load);
     connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::listFromSQL);
-    listFromSQL();
 }
 
 void CartridgeModel::listFromSQL(){
     qDebug() << "Data updated";
-    QSqlQuery query(QUERY);
+    QSqlQuery query(m_formatedQuery);
 
     int position, maxPosition=0;
+    beginResetModel();
     while(query.next()){
         position = query.value(0).toInt();
         qDebug() << "Position = " << position;
@@ -37,13 +43,15 @@ void CartridgeModel::listFromSQL(){
         hash.insert(ID,query.value(4));
         m_data.replace(position, hash);
     }
+    endResetModel();
         //TODO: send signal that data has changed
-    emit dataChanged(index(0,0),index(m_data.count()-1,0));
+//    emit dataChanged(index(0,0),index(m_data.count()-1,0));
 }
 
 /* iteratively fill holes in the list */
 void CartridgeModel::fillHolesInList(int maxPosition){
     int indexLast = m_data.count();
+
     for(int i=0; i<maxPosition-indexLast+1;i++){
         m_data << QHash<RoleNames,QVariant>();
     }
@@ -54,7 +62,8 @@ int CartridgeModel::rowCount(const QModelIndex &parent) const
     Q_UNUSED(parent);
     // For list models only the root node (an invalid parent) should return the list's size. For all
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
-    return m_data.count();
+//    return m_data.count();
+    return m_width*m_height;
 }
 
 QVariant CartridgeModel::data(const QModelIndex &index, int role) const
@@ -74,13 +83,32 @@ QHash<int,QByteArray> CartridgeModel::roleNames() const
     return m_roleNames;
 }
 
-void CartridgeModel::fitToDimension(int x, int y){
-    int nbrBlockInView=x*y, nbrCurrentData=m_data.count();
+void CartridgeModel::fitToDimension(){
+    int nbrBlockInView=m_width*m_height, nbrCurrentData=m_data.count();
     if(nbrBlockInView > nbrCurrentData){
-        emit beginInsertRows(QModelIndex(),nbrCurrentData,nbrBlockInView);
+        emit beginInsertRows(QModelIndex(),nbrCurrentData,nbrBlockInView+1);
         while(m_data.count()<nbrBlockInView)
             m_data << QHash<RoleNames,QVariant>();
-        qDebug() << m_data.count();
+        qDebug() << "number of cases " << m_data.count();
         emit endInsertRows();
     }
+}
+
+void CartridgeModel::load(){
+    qDebug() << "model reloaded";
+    clear();
+    m_formatedQuery = QUERY.arg(m_idPanel);
+    listFromSQL();
+//    fitToDimension();
+}
+
+void CartridgeModel::clear(){
+    beginResetModel();
+    m_data.clear();
+    endResetModel();
+}
+
+void CartridgeModel::changePanel(int idPanel){
+    m_idPanel = idPanel;
+    emit panelChanged();
 }
