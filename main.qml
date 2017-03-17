@@ -39,10 +39,19 @@ ApplicationWindow {
         }
 
         Repeater{
-            model: ["first","second","third","fourth","fifth"]
+            id: panelItem
+            model: PanelModel{}
             TabButton{
-                text: modelData
+                text: name
                 width: 100
+                MouseArea{
+                    propagateComposedEvents: true
+                    onHoveredChanged: console.log(id)
+                    onClicked: {
+                        parent.clicked = true
+                        console.log("test de merde")
+                    }
+                }
             }
         }
     }

@@ -5,7 +5,8 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     cartridgemodel.cpp \
-    datapuller.cpp
+    datapuller.cpp \
+    panelmodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -34,4 +35,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     cartridgemodel.h \
     iupdatenotifier.h \
-    datapuller.h
+    datapuller.h \
+    panelmodel.h

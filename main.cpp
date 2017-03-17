@@ -4,6 +4,7 @@
 #include <QSqlDatabase>
 #include <QDebug>
 #include <QtCore>
+#include "panelmodel.h"
 #include "cartridgemodel.h"
 #define __WINMEDIA_DEBUG
 
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
         qDebug() << db.lastError();
 
     qmlRegisterType<CartridgeModel>("org.winmedia.guiennet",1,0,"CartridgeModel");
+    qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
