@@ -2,6 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
-        <file>LogicUI.js</file>
+        <file>CartridgeDelegate.qml</file>
     </qresource>
 </RCC>
