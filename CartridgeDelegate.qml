@@ -11,7 +11,7 @@ Rectangle {
 
     SequentialAnimation{
         loops: Animation.Infinite
-        running: grid.state == "MOVEMODE" || grid.state == "ITEMSELECTEDFORMOVE"
+        running: grid.state == "MOVEMODE"
         NumberAnimation{
             target: backgroundCell
             property: "scale"; to: 0.95; duration: 300
@@ -22,18 +22,31 @@ Rectangle {
         }
     }
 
-    states: [
-        State {
-            name: "SELECTABLE"
-            when: grid.state == "MOVEMODE"
-            onCompleted: console.log("MODE SELECTABLE")
-        },
+    states:[
+//        State {
+//            name: "SELECTABLE"
+//            when: grid.state == "MOVEMODE"
+//            onCompleted: {
+//                console.log("MODE SELECTABLE")
+//            }
+//        },
         State {
             name: "ITEMSELECTEDFORMOVE"
-            onCompleted: console.log("MODE ITEMSELECTEDFORMOVE")
+            onCompleted: {console.log("MODE ITEMSELECTEDFORMOVE")
+                console.log(index)}
+//            when: mouseArea.pressed && grid.state == "MOVEMODE"
             PropertyChanges{
                 target: grid.currentItem
                 border.width: 3
+                z: 100
+            }
+            PropertyChanges{
+                target: mouseArea
+                drag.target: backgroundCell
+            }
+            PropertyChanges{
+                target: dropArea
+                enabled: false
             }
         },
         State{
@@ -49,21 +62,44 @@ Rectangle {
         property: "scale"; to: 1; duration: 300
     }
 
+    Drag.active: mouseArea.drag.active
+    Drag.hotSpot.x: backgroundCell.width/2
+    Drag.hotSpot.y: backgroundCell.height/2
     MouseArea{
+        id: mouseArea
         anchors.fill: parent
-        onClicked:{
+        onPressed:{
             console.log(backgroundCell.state)
-            if(backgroundCell.state == "SELECTABLE"){
+            if(grid.state == "MOVEMODE"){
                 grid.currentIndex = index
                 grid.currentItem.state = "ITEMSELECTEDFORMOVE"
             }
         }
+        onReleased: {
+            if(backgroundCell.state == "ITEMSELECTEDFORMOVE"){
+                parent = backgroundCell
+                grid.currentItem.state = ""
+            }
+        }
+
         onPressAndHold:{
             if(grid.state == ""){
                 grid.state = "MOVEMODE"
             }
             else if(grid.state == "MOVEMODE"){
                 grid.state = ""
+            }
+        }
+    }
+
+    DropArea{
+        id: dropArea
+        anchors.fill: parent
+        states: State{
+            when: dropArea.containsDrag
+            PropertyChanges{
+                target: backgroundCell
+                color: "#AAAAAA"
             }
         }
     }
@@ -89,6 +125,7 @@ Rectangle {
     }
 
     Row{
+        id: controlRow
         anchors.bottom: backgroundCell.bottom
         Rectangle{
             color: Qt.darker(backgroundCell.color)
