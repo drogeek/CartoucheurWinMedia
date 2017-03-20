@@ -5,7 +5,8 @@ const QString CartridgeModel::QUERY=QString("\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
-            AND Panel.IPanel = %1");
+            AND Panel.IPanel = %1\
+            ORDER BY Position");
 
 CartridgeModel::CartridgeModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -24,17 +25,25 @@ CartridgeModel::CartridgeModel(QObject *parent)
     connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::listFromSQL);
 }
 
+        //TODO: implement headerData
+bool CartridgeModel::setData(const QModelIndex &index, const QVariant &value, int role){
+    int position = index.row();
+    QHash<RoleNames,QVariant> update(m_data.at(position));
+    update[(CartridgeModel::RoleNames)role] = value;
+    m_data.replace(position,update);
+    return true;
+}
+
 void CartridgeModel::listFromSQL(){
     qDebug() << "Data updated";
     QSqlQuery query(m_formatedQuery);
 
-    int position, maxPosition=0;
+    int position;
     beginResetModel();
     while(query.next()){
         position = query.value(0).toInt();
         qDebug() << "Position = " << position;
-        maxPosition = (maxPosition < position) ? position : maxPosition;
-        fillHolesInList(maxPosition);
+        fillHolesInList(position);
 
         QHash<RoleNames,QVariant> hash;
         hash.insert(PERFORMER,query.value(1));

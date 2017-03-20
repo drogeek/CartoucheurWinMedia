@@ -48,10 +48,6 @@ ApplicationWindow {
                 MouseArea{
                     propagateComposedEvents: true
                     onHoveredChanged: console.log(id)
-                    onClicked: {
-                        parent.clicked = true
-                        console.log("test de merde")
-                    }
                 }
             }
         }
@@ -62,7 +58,6 @@ ApplicationWindow {
         id:grid
         anchors.fill: parent
         anchors.margins: 10
-        clip: true
         model: DelegateModel{
             id: delegateModel
             model: CartridgeModel{}

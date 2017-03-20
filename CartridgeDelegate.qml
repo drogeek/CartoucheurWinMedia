@@ -63,6 +63,7 @@ Rectangle {
     }
 
     Drag.active: mouseArea.drag.active
+    Drag.source: mouseArea
     Drag.hotSpot.x: backgroundCell.width/2
     Drag.hotSpot.y: backgroundCell.height/2
     MouseArea{
