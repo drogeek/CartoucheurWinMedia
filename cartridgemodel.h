@@ -21,7 +21,8 @@ public:
         PERFORMER = Qt::UserRole,
         TITLE = Qt::UserRole+1,
         DURATION = Qt::UserRole+2,
-        ID = Qt::UserRole+3
+        ID = Qt::UserRole+3,
+        POSITION = Qt::UserRole+4
     };
 
     explicit CartridgeModel(QObject *parent = 0);

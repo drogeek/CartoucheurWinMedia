@@ -1,11 +1,11 @@
 #include "cartridgemodel.h"
 
 const QString CartridgeModel::QUERY=QString("\
-            SELECT Position,Performer,Title,Cartridge.Duration,ICartridge\
+            SELECT TOP %1 Position,Performer,Title,Cartridge.Duration,ICartridge\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
-            AND Panel.IPanel = %1\
+            AND Panel.IPanel = %2\
             ORDER BY Position");
 
 CartridgeModel::CartridgeModel(QObject *parent)
@@ -15,6 +15,7 @@ CartridgeModel::CartridgeModel(QObject *parent)
     m_roleNames[DURATION]= "duration";
     m_roleNames[TITLE]= "title";
     m_roleNames[ID]= "id";
+    m_roleNames[POSITION]= "position";
 
     //TODO: recover from file
     setWidthModel(DEFAULT_WIDTH);
@@ -38,19 +39,21 @@ void CartridgeModel::listFromSQL(){
     qDebug() << "Data updated";
     QSqlQuery query(m_formatedQuery);
 
-    int position;
+//    int position;
     beginResetModel();
     while(query.next()){
-        position = query.value(0).toInt();
-        qDebug() << "Position = " << position;
-        fillHolesInList(position);
+//        position = query.value(0).toInt();
+//        qDebug() << "Position = " << position;
+//        fillHolesInList(position);
 
         QHash<RoleNames,QVariant> hash;
+        hash.insert(POSITION,query.value(0));
         hash.insert(PERFORMER,query.value(1));
         hash.insert(TITLE,query.value(2));
         hash.insert(DURATION,query.value(3));
         hash.insert(ID,query.value(4));
-        m_data.replace(position, hash);
+//        m_data.replace(position, hash);
+        m_data.append(hash);
     }
     endResetModel();
         //TODO: send signal that data has changed
@@ -58,13 +61,13 @@ void CartridgeModel::listFromSQL(){
 }
 
 /* iteratively fill holes in the list */
-void CartridgeModel::fillHolesInList(int maxPosition){
-    int indexLast = m_data.count();
+//void CartridgeModel::fillHolesInList(int maxPosition){
+//    int indexLast = m_data.count();
 
-    for(int i=0; i<maxPosition-indexLast+1;i++){
-        m_data << QHash<RoleNames,QVariant>();
-    }
-}
+//    for(int i=0; i<maxPosition-indexLast+1;i++){
+//        m_data << QHash<RoleNames,QVariant>();
+//    }
+//}
 
 int CartridgeModel::rowCount(const QModelIndex &parent) const
 {
@@ -106,7 +109,7 @@ void CartridgeModel::fitToDimension(){
 void CartridgeModel::load(){
     qDebug() << "model reloaded";
     clear();
-    m_formatedQuery = QUERY.arg(m_idPanel);
+    m_formatedQuery = QUERY.arg(m_width*m_height).arg(m_idPanel);
     listFromSQL();
 //    fitToDimension();
 }
