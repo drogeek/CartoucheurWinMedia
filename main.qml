@@ -65,7 +65,7 @@ ApplicationWindow {
             cellWidth: width/gridModel.widthModel
             cellHeight: height/gridModel.heightModel
             flow: GridView.FlowTopToBottom
-            interactive: false
+//            interactive: false
 
             states: [
                 State{
@@ -89,12 +89,32 @@ ApplicationWindow {
             model: CartridgeModel{}
             delegate: dragDelegate
             items.includeByDefault: false
-            function sort(){
-                while(unorderedItems.count > 0){
-                    var item = unorderedItems.get(0)
-                    var index = item.model.position
+            filterOnGroup: "unordered"
 
+            function sort(){
+                while(unorderedItems.count < 18)
+                    unorderedItems.insert({})
+                var cont=1
+                while(cont){
+                    cont=0
+                    for(var i=0; i< unorderedItems.count; i++){
+                        var item = unorderedItems.get(i)
+                        if(item.model.position !== undefined)
+                            cont+=delegateModel.swap(item.unorderedIndex,item.model.position)
+                    }
                 }
+            }
+
+            function swap(indexA,indexB){
+                if(indexA !== indexB){
+                    var itemB=unorderedItems.get(indexB)
+                    unorderedItems.move(indexA,indexB)
+                    console.log("move from "+indexA+" to "+indexB)
+                    unorderedItems.move(itemB.unorderedIndex,indexA)
+                    console.log("move from "+itemB.unorderedIndex+" to "+indexA)
+                    return 1
+                }
+                return 0
             }
 
             groups: [
@@ -102,11 +122,11 @@ ApplicationWindow {
                     id: unorderedItems
                     name: "unordered"
                     includeByDefault: true
-                    onChanged: {
+
+                    onChanged:{
                         delegateModel.sort()
                     }
                 }
-
             ]
         }
     }

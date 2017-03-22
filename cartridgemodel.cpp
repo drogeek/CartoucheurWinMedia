@@ -1,10 +1,11 @@
 #include "cartridgemodel.h"
 
 const QString CartridgeModel::QUERY=QString("\
-            SELECT TOP %1 Position,Performer,Title,Cartridge.Duration,ICartridge\
+            SELECT Position,Performer,Title,Cartridge.Duration,ICartridge\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
+            AND Cartridge.Position <= %1\
             AND Panel.IPanel = %2\
             ORDER BY Position");
 
@@ -74,8 +75,8 @@ int CartridgeModel::rowCount(const QModelIndex &parent) const
     Q_UNUSED(parent);
     // For list models only the root node (an invalid parent) should return the list's size. For all
     // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
-//    return m_data.count();
-    return m_width*m_height;
+    return m_data.count();
+//    return m_width*m_height;
 }
 
 QVariant CartridgeModel::data(const QModelIndex &index, int role) const
