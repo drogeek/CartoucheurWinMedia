@@ -8,7 +8,7 @@
 #include "datapuller.h"
 
 #define DEFAULT_WIDTH 3
-#define DEFAULT_HEIGHT 6
+#define DEFAULT_HEIGHT 10
 
 class CartridgeModel : public QAbstractListModel
 {

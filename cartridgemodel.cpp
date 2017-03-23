@@ -5,7 +5,7 @@ const QString CartridgeModel::QUERY=QString("\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
-            AND Cartridge.Position <= %1\
+            AND Cartridge.Position < %1\
             AND Panel.IPanel = %2\
             ORDER BY Position");
 
