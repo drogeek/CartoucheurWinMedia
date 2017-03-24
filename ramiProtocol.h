@@ -1,6 +1,7 @@
 #ifndef RAMICARTRIDGE_H
 #define RAMICARTRIDGE_H
 #include <iostream>
+#include <regex>
 #include <bitset>
 
 /* this class allows you to communicate using the RAMI brand cartridge.
@@ -32,8 +33,11 @@ public:
 
     static RamiProtocol& instance();
     static void print(const Data&);
+    static void print(const Params&);
     Data encrypt(char adress, char line, char column, bool state, char ack);
     Data encrypt(const Params& params);
+    Params decrypt(const Data&);
+    Params decrypt(const std::string&);
 
 private:
     static RamiProtocol m_instance;

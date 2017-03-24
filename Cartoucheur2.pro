@@ -6,7 +6,8 @@ CONFIG += c++11
 SOURCES += main.cpp \
     cartridgemodel.cpp \
     datapuller.cpp \
-    panelmodel.cpp
+    panelmodel.cpp \
+    ramiProtocol.cpp
 
 RESOURCES += qml.qrc
 
@@ -36,4 +37,5 @@ HEADERS += \
     cartridgemodel.h \
     iupdatenotifier.h \
     datapuller.h \
-    panelmodel.h
+    panelmodel.h \
+    ramiProtocol.h

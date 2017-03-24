@@ -6,6 +6,7 @@ const QString CartridgeModel::QUERY=QString("\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
             AND Panel.IPanel = %1\
+            AND Cartridge.Position < %2\
             ORDER BY Position");
 
 CartridgeModel::CartridgeModel(QObject *parent)
@@ -20,9 +21,7 @@ CartridgeModel::CartridgeModel(QObject *parent)
     setWidthModel(DEFAULT_WIDTH);
     setHeightModel(DEFAULT_HEIGHT);
     connect(this,&CartridgeModel::panelChanged,this,&CartridgeModel::load);
-//    connect(this,&CartridgeModel::widthModelChanged,this,&CartridgeModel::load);
-//    connect(this,&CartridgeModel::heightModelChanged,this,&CartridgeModel::load);
-    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::listFromSQL);
+    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::load);
 }
 
         //TODO: implement headerData
@@ -106,7 +105,7 @@ void CartridgeModel::fitToDimension(){
 void CartridgeModel::load(){
     qDebug() << "model reloaded";
     clear();
-    m_formatedQuery = QUERY.arg(m_idPanel);
+    m_formatedQuery = QUERY.arg(m_idPanel).arg(m_width*m_height);
     listFromSQL();
 //    fitToDimension();
 }

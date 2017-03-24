@@ -53,42 +53,38 @@ ApplicationWindow {
         }
     }
 
-    GridView{
-        property int alias
-        id:grid
+    Rectangle{
+        id: gridRect
         anchors.fill: parent
-        anchors.margins: 10
-        model: DelegateModel{
-            id: delegateModel
-            model: CartridgeModel{}
-            delegate: CartridgeDelegate{}
-        }
-        cellWidth: width/gridModel.widthModel
-        cellHeight: height/gridModel.heightModel
-        flow: GridView.FlowTopToBottom
-        interactive: false
-//        onDimensionChanged: console.log("dimension changed:("+xIndex+","+yIndex+")")
-//        onWidthChanged: LogicUI.computeDimension()
-
-//        signal dimensionChanged(int xIndex, int yIndex)
-//        Connections{
-//            onDimensionChanged: grid.model.fitToDimension(xIndex,yIndex)
-//        }
-
-        states: [
-            State{
-                name: "MOVEMODE"
-                onCompleted: console.log("STATE MOVEMODE")
+        GridView{
+            id:grid
+            anchors.fill: parent
+            anchors.margins: 10
+            model: DelegateModel{
+                id: delegateModel
+                model: CartridgeModel{}
+                delegate: CartridgeDelegate{}
             }
-        ]
+            cellWidth: width/gridModel.widthModel
+            cellHeight: height/gridModel.heightModel
+            flow: GridView.FlowTopToBottom
+            interactive: false
 
-        Component.onCompleted: {
+            states: [
+                State{
+                    name: "MOVEMODE"
+                    onCompleted: console.log("STATE MOVEMODE")
+                }
+            ]
+
+            Component.onCompleted: {
+            }
+
+
+            displaced: Transition{
+                NumberAnimation { property:"scale"; to:1 }
+            }
+
         }
-
-
-        displaced: Transition{
-            NumberAnimation { property:"scale"; to:1 }
-        }
-
     }
 }

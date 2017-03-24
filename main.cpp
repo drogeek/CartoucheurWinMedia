@@ -6,6 +6,7 @@
 #include <QtCore>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
+#include "ramiProtocol.h"
 #define __WINMEDIA_DEBUG
 
 
@@ -20,6 +21,15 @@ int main(int argc, char *argv[])
     const QString DRIVER = "SQL Server";
 #endif
 
+    RamiProtocol::Params params;
+    params.column=3;
+    params.line=4;
+    params.ack=1;
+    params.adress=5;
+    params.state=1;
+    RamiProtocol::Data data=RamiProtocol::instance().encrypt(params);
+    RamiProtocol::Params result = RamiProtocol::instance().decrypt(data);
+    RamiProtocol::print(result);
     //TODO: to be replaced by data provided in a file
     const QString SERVER = "193.253.53.24";
     const QString PORT = "1437";

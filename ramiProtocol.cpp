@@ -34,3 +34,32 @@ void RamiProtocol::print(const Data& data){
                  << "lineState:" << lineState << std::endl
                  << "ack:" << ack << std::endl;
 }
+
+void RamiProtocol::print(const Params& params){
+    std::cout << "adress:" << params.adress << std::endl
+              << "column:" << params.column << std::endl
+              << "line:" << params.line << std::endl
+              << "state:" << params.state << std::endl
+              << "ack:" << params.ack << std::endl;
+}
+
+RamiProtocol::Params RamiProtocol::decrypt(const Data& data){
+    std::string str;
+    str.append(1,data.adressColum);
+    str.append(1,data.lineState);
+    str.append(1,data.ack);
+    return RamiProtocol::decrypt(str);
+}
+
+RamiProtocol::Params RamiProtocol::decrypt(const std::string& str){
+    RamiProtocol::Params result;
+    std::cmatch cm;
+    //TODO: create regex in case we increase number of columns possible
+    std::regex_match(str,cm,std::regex("[\x81\x82\x83\x84].!"));
+    result.column=cm[0]-0x81;
+    result.line=cm[1]/16-1;
+    result.ack=cm[3];
+    result.adress=cm[0]/16;
+    result.state=(cm[1]<<4)>>4;
+    return result;
+}
