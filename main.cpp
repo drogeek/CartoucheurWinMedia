@@ -37,7 +37,8 @@ int main(int argc, char *argv[])
     }
 
     //Test the encryption and decryption protocole for RAMI cartridge
-    auto params=RamiProtocol::getParams();
+//    auto params=RamiProtocol::getParams();
+    RamiProtocol::Params params;
     params.column=1;
     params.line=6;
     params.state=1;
