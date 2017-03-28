@@ -21,29 +21,31 @@ int main(int argc, char *argv[])
     const QString DRIVER = "SQL Server";
 #endif
 
-    RamiProtocol::Params params;
-    params.column=3;
-    params.line=4;
-    params.ack=1;
-    params.adress=5;
-    params.state=1;
-    RamiProtocol::Data data=RamiProtocol::instance().encrypt(params);
-    RamiProtocol::Params result = RamiProtocol::instance().decrypt(data);
-    RamiProtocol::print(result);
-    //TODO: to be replaced by data provided in a file
+//TODO: to be replaced by data provided in a file
     const QString SERVER = "193.253.53.24";
     const QString PORT = "1437";
     const QString USER = "WinBizz";
     const QString PASSWORD = "WinBizz2012";
 
-
 #ifdef __WINMEDIA_DEBUG
+    //Show available drivers
     QStringList drivers = QSqlDatabase::drivers();
     QStringList::const_iterator constIter;
     qDebug() << "Available drivers:";
     for(constIter=drivers.constBegin(); constIter != drivers.constEnd(); constIter++){
         qDebug() << (*constIter).toLocal8Bit().constData();
     }
+
+    //Test the encryption and decryption protocole for RAMI cartridge
+    auto params=RamiProtocol::getParams();
+    params.column=1;
+    params.line=6;
+    params.state=1;
+    RamiProtocol::Data data=RamiProtocol::encrypt(params);
+    RamiProtocol::print(data);
+    auto result = RamiProtocol::decrypt(data);
+    RamiProtocol::print(result);
+
 #endif
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
