@@ -23,10 +23,14 @@ int main(int argc, char *argv[])
 #endif
 
 //TODO: to be replaced by data provided in a file
-    const QString SERVER = "193.253.53.24";
-    const QString PORT = "1437";
-    const QString USER = "WinBizz";
-    const QString PASSWORD = "WinBizz2012";
+//    const QString SERVER = "193.253.53.24";
+//    const QString PORT = "1437";
+//    const QString USER = "WinBizz";
+//    const QString PASSWORD = "WinBizz2012";
+    const QString SERVER = "127.0.0.1";
+    const QString PORT = "1433";
+    const QString USER = "test";
+    const QString PASSWORD = "test";
     const QString NAME = "CartridgeApplication";
 
 #ifdef __WINMEDIA_DEBUG
