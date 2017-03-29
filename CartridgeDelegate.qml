@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.1
 MouseArea{
+    property var currentIndex: index
     id: mouseArea
     height: grid.cellHeight-2
     width: grid.cellWidth-2
@@ -110,6 +111,9 @@ MouseArea{
 
             onDropped: {
                 //TODO
+                console.log("source:"+dropArea.drag.source.currentIndex)
+                console.log("dest:"+index)
+                gridModel.swap(dropArea.drag.source.currentIndex, index)
             }
         }
 
@@ -144,7 +148,7 @@ MouseArea{
                 anchors.bottom: parent.bottom
                 Text{
                     anchors.centerIn: parent
-                    text: index+1
+                    text: (index)%gridModel.heightModel + 1
                 }
             }
 

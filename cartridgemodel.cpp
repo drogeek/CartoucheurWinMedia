@@ -51,6 +51,10 @@ void CartridgeModel::listFromSQL(){
         hash.insert(ID,query.value(4));
         m_data.replace(position, hash);
     }
+    while(m_data.count()<rowCount()){
+        QHash<RoleNames,QVariant> empty;
+        m_data.append(empty);
+    }
     endResetModel();
         //TODO: send signal that data has changed
 //    emit dataChanged(index(0,0),index(m_data.count()-1,0));
@@ -119,4 +123,13 @@ void CartridgeModel::clear(){
 void CartridgeModel::changePanel(int idPanel){
     m_idPanel = idPanel;
     emit panelChanged();
+}
+
+void CartridgeModel::swap(int from, int to){
+    qDebug() << "from:" << m_data.at(from);
+    qDebug() << "to:" << m_data.at(to);
+    m_data.swap(from,to);
+    qDebug() << "new from:" << m_data.at(from);
+    qDebug() << "new to:" << m_data.at(to);
+    dataChanged(index(0),index(rowCount()-1));
 }

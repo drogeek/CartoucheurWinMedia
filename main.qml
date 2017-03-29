@@ -10,8 +10,8 @@ ApplicationWindow {
     property alias gridModel: delegateModel.model
     id: root
     visible: true
-    width: 480
-    height: 640
+    width: 1360
+    height: 768
     title: qsTr("Cartridge")
 
     menuBar: MenuBar{
@@ -35,7 +35,8 @@ ApplicationWindow {
         anchors.fill: parent
         onCurrentIndexChanged: {
             console.log("tab n°"+currentIndex+" selected")
-            gridModel.changePanel(currentIndex+1)
+            console.log("id:"+panelItem.itemAt(currentIndex).idTab)
+            gridModel.changePanel(panelItem.itemAt(currentIndex).idTab)
             grid.state = ""
         }
 
@@ -43,12 +44,9 @@ ApplicationWindow {
             id: panelItem
             model: PanelModel{}
             TabButton{
+                property var idTab: id
                 text: name
                 width: 100
-                MouseArea{
-                    propagateComposedEvents: true
-                    onHoveredChanged: console.log(id)
-                }
             }
         }
     }

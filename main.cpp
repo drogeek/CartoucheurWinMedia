@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlDatabase>
 #include <QDebug>
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
     const QString PORT = "1437";
     const QString USER = "WinBizz";
     const QString PASSWORD = "WinBizz2012";
+    const QString NAME = "CartridgeApplication";
 
 #ifdef __WINMEDIA_DEBUG
     //Show available drivers
@@ -37,7 +39,6 @@ int main(int argc, char *argv[])
     }
 
     //Test the encryption and decryption protocole for RAMI cartridge
-//    auto params=RamiProtocol::getParams();
     RamiProtocol::Params params;
     params.column=1;
     params.line=6;
@@ -59,6 +60,15 @@ int main(int argc, char *argv[])
 
     if(db.open()){
         qDebug() << "Opening of DB successful";
+        QSqlQuery query(QString("SELECT Name,Ip"
+                                "FROM [WinMedia].[dbo].[Computer]"
+                                "WHERE Name == %1").arg(NAME));
+//        if(query.size()<=0){
+//            QSqlQuery insert(QString("INSERT INTO [WinMedia].[dbo].[Computer] (Name,Ip,Modify,X,Y)"
+//                                     "VALUES ("+NAME+","+","+"0,0"
+//                                     )
+//                             );
+//        }
     }
     else
         qDebug() << db.lastError();

@@ -7,8 +7,8 @@
 #include <QModelIndex>
 #include "datapuller.h"
 
-#define DEFAULT_WIDTH 3
-#define DEFAULT_HEIGHT 6
+#define DEFAULT_WIDTH 4
+#define DEFAULT_HEIGHT 8
 
 class CartridgeModel : public QAbstractListModel
 {
@@ -48,6 +48,7 @@ protected:
 public slots:
     void fitToDimension();
     void changePanel(int idPanel);
+    void swap(int from, int to);
 
 signals:
     void panelChanged();

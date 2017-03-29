@@ -24,9 +24,8 @@ public:
     }Data;
 
     typedef struct Params{
-        Params() : adress(0x8), ack('!'){}
-        const uchar adress;
-        const uchar ack;
+        static const uchar adress=0x8;
+        static const uchar ack='!';
         uchar line;
         uchar column;
         bool state;
