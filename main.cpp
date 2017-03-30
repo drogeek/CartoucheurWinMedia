@@ -8,6 +8,7 @@
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
+#include "connection.h"
 #define __WINMEDIA_DEBUG
 
 
@@ -33,6 +34,9 @@ int main(int argc, char *argv[])
     const QString PASSWORD = "test";
     const QString NAME = "CartridgeApplication";
 
+    //TODO: wait for the connection in a thread
+    Connection connection("127.0.0.1",1234);
+
 #ifdef __WINMEDIA_DEBUG
     //Show available drivers
     QStringList drivers = QSqlDatabase::drivers();
@@ -45,13 +49,14 @@ int main(int argc, char *argv[])
     //Test the encryption and decryption protocole for RAMI cartridge
     RamiProtocol::Params params;
     params.column=1;
-    params.line=6;
+    params.row=6;
     params.state=1;
     RamiProtocol::Data data=RamiProtocol::encrypt(params);
     RamiProtocol::print(data);
     auto result = RamiProtocol::decrypt(data);
     RamiProtocol::print(result);
 
+//    connection.send(2,1,1);
 #endif
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
@@ -81,6 +86,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
+    QObject* rootObject=engine.rootObjects()[0];
+    QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
+
 
     return app.exec();
 }

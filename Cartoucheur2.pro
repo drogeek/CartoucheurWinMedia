@@ -7,7 +7,8 @@ SOURCES += main.cpp \
     cartridgemodel.cpp \
     datapuller.cpp \
     panelmodel.cpp \
-    ramiProtocol.cpp
+    ramiProtocol.cpp \
+    connection.cpp
 
 RESOURCES += qml.qrc
 
@@ -33,9 +34,11 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+win32{LIBS += -lws2_32}
 HEADERS += \
     cartridgemodel.h \
     iupdatenotifier.h \
     datapuller.h \
     panelmodel.h \
-    ramiProtocol.h
+    ramiProtocol.h \
+    connection.h

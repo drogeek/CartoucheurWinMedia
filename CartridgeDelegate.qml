@@ -1,5 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.1
+
+
 MouseArea{
     property var currentIndex: index
     id: mouseArea
@@ -97,7 +99,6 @@ MouseArea{
         Drag.hotSpot.x: backgroundCell.width/2
         Drag.hotSpot.y: backgroundCell.height/2
 
-
         DropArea{
             id: dropArea
             anchors.fill: parent
@@ -118,6 +119,7 @@ MouseArea{
         }
 
         Column{
+
             width: parent.width
             Text{
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -130,14 +132,49 @@ MouseArea{
             }
 
             Text{
-                property var min: Math.ceil(duration/3600)
+                id: timeDisplay
+
+                function formateHour(s){
+                    var milliToSec=Math.floor(s/1000)
+                    var sec=milliToSec%60
+                    var min=Math.floor(milliToSec/60)
+                    var hour=Math.floor(min/60)
+                    return {
+                        sec: padding(sec),
+                        min: padding(min),
+                        hour: padding(hour)
+                    }
+                }
+
+                function padding(x){
+                    return ("00"+x).slice(-2)
+                }
+
+                property int currentDuration : duration
+                property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
                 font.pointSize: 18
-                text: min ? "<b><i>"+ min + "</b></i><i>min</i> " : ""
+                text: duration ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
+
+                Timer{
+                    running: backgroundCell.state == "PLAY"
+                    onTriggered: {
+                        var newDuration = timeDisplay.currentDuration-1000
+                        if(newDuration > 0)
+                            timeDisplay.currentDuration=newDuration
+                        else
+                            backgroundCell.state = ""
+                    }
+                    interval: 1000
+                    repeat: true
+                }
             }
+
+
         }
 
         Row{
+
             id: controlRow
             anchors.bottom: backgroundCell.bottom
             Rectangle{
@@ -155,15 +192,15 @@ MouseArea{
             ToolButton{
                 text: "►"
                 onClicked: {
-                    console.log(grid.model.widthModel)
-                    grid.model.widthModel++;
+                    backgroundCell.state = "PLAY"
+                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,true)
                 }
             }
             ToolButton{
                 text: "◼"
                 onClicked: {
-                    console.log(grid.model.heightModel)
-                    grid.model.heightModel++;
+                    backgroundCell.state = ""
+                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,false)
                 }
             }
             ToolButton{
@@ -171,7 +208,7 @@ MouseArea{
                 onClicked: console.log(id)
             }
             states:State{
-                when: grid.state == "MOVEMODE"
+                when: grid.state === "MOVEMODE"
                 PropertyChanges {
                     target: controlRow
                     enabled: false
@@ -179,6 +216,23 @@ MouseArea{
             }
         }
 
+        states: [
+            State{
+                name: "PLAY"
+                PropertyChanges{
+                    target: backgroundCell
+                    color: "#CC3333"
+                }
+            },
+            State{
+                name: ""
+                PropertyChanges{
+                    target: timeDisplay
+                    currentDuration: duration
+                }
+            }
+
+        ]
     }
 
 }

@@ -14,6 +14,8 @@ ApplicationWindow {
     height: 768
     title: qsTr("Cartridge")
 
+    signal playerCommand(int row, int column, bool state);
+
     menuBar: MenuBar{
         Menu{
             title: "File"
