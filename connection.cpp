@@ -43,6 +43,7 @@ int Connection::send(int row, int column, bool state){
     params.state=state;
     auto toSend = RamiProtocol::encrypt(params);
     socket_err = ::send(m_csock,(char *)&toSend,sizeof(toSend),0);
+    qDebug() << "Command sent";
     if(socket_err == SOCKET_ERROR){
 
 #ifdef _WIN32
@@ -58,19 +59,29 @@ int Connection::send(Params params){
     return Connection::send(params.row,params.column,params.state);
 }
 
-Connection::Params Connection::receive(){
-    Params result;
+void Connection::receive(){
+    QVariantMap result;
+    RamiProtocol::Data data;
     int socket_err;
-    socket_err = ::recv(m_sock,(char *)&result, sizeof(result),0);
-    if(socket_err == SOCKET_ERROR){
+    socket_err = ::recv(m_csock,(char *)&data, sizeof(data),0);
+    if(socket_err != SOCKET_ERROR){
+        auto tmp = (RamiProtocol::decrypt(data));
+//        result.column=tmp.column;
+//        result.row=tmp.row;
+//        result.state=tmp.state;
+        result["column"]=tmp.column;
+        result["row"]=tmp.row;
+        result["state"]=tmp.state;
+    }
+    else{
 #ifdef _WIN32
         socket_err = WSAGetLastError();
 #endif
         qDebug() << "Problem receiving socket";
         qDebug() << "error code:" << socket_err;
     }
-//    qDebug() << "received:" << result;
-    return result;
+    qDebug() << "Command received";
+    emit commandReceived(result);
 }
 
 Connection::~Connection(){

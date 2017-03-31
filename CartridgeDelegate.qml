@@ -4,6 +4,7 @@ import QtQuick.Controls 2.1
 
 MouseArea{
     property var currentIndex: index
+    property var backgroundCellAlias: backgroundCell
     id: mouseArea
     height: grid.cellHeight-2
     width: grid.cellWidth-2
@@ -22,6 +23,8 @@ MouseArea{
             console.log(grid.currentItem.state)
         }
     }
+
+    onClicked: root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,false)
 
     onPressAndHold:{
         if(grid.state === ""){
@@ -70,7 +73,9 @@ MouseArea{
         height: grid.cellHeight-2
         width: grid.cellWidth-2
         radius: 5
-        color: "#FAFAFA"
+        property var backgroundcolor1: "#FAFAFA"
+        property var backgroundcolor2: "#FFB366"
+        color: backgroundcolor1
         border.color: "#CCCCCC"
 
         SequentialAnimation{
@@ -150,7 +155,7 @@ MouseArea{
                     return ("00"+x).slice(-2)
                 }
 
-                property int currentDuration : duration
+                property var currentDuration : duration
                 property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
                 font.pointSize: 18
@@ -174,7 +179,6 @@ MouseArea{
         }
 
         Row{
-
             id: controlRow
             anchors.bottom: backgroundCell.bottom
             Rectangle{
@@ -189,24 +193,25 @@ MouseArea{
                 }
             }
 
-            ToolButton{
-                text: "►"
-                onClicked: {
-                    backgroundCell.state = "PLAY"
-                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,true)
-                }
-            }
-            ToolButton{
-                text: "◼"
-                onClicked: {
-                    backgroundCell.state = ""
-                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,false)
-                }
-            }
-            ToolButton{
-                text: "↺"
-                onClicked: console.log(id)
-            }
+//            ToolButton{
+//                text: "►"
+//                onClicked: {
+////                    backgroundCell.state = "PLAY"
+//                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,true)
+//                }
+
+//            }
+//            ToolButton{
+//                id: stopBtn
+//                text: "◼"
+//                onClicked: {
+////                    backgroundCell.state = ""
+//                }
+//            }
+//            ToolButton{
+//                text: "↺"
+//                onClicked: console.log(id)
+//            }
             states:State{
                 when: grid.state === "MOVEMODE"
                 PropertyChanges {
@@ -221,7 +226,7 @@ MouseArea{
                 name: "PLAY"
                 PropertyChanges{
                     target: backgroundCell
-                    color: "#CC3333"
+                    color: backgroundCell.backgroundcolor2
                 }
             },
             State{
@@ -232,6 +237,18 @@ MouseArea{
                 }
             }
 
+        ]
+        transitions: [
+            Transition {
+                from: ""
+                to: "PLAY"
+                ColorAnimation {
+                    loops: Animation.Infinite
+                    to: backgroundCell.backgroundcolor2
+                    duration: 800
+                    easing.type: Easing.InOutBack
+                }
+            }
         ]
     }
 

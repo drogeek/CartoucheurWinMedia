@@ -65,6 +65,7 @@ ApplicationWindow {
                 model: CartridgeModel{}
                 delegate: CartridgeDelegate{}
             }
+            delegate: CartridgeDelegate{}
             cellWidth: width/gridModel.widthModel
             cellHeight: height/gridModel.heightModel
             flow: GridView.FlowTopToBottom
@@ -85,6 +86,18 @@ ApplicationWindow {
                 NumberAnimation { property:"scale"; to:1 }
             }
 
+            Connections{
+                target: Connection
+                onCommandReceived: {
+                    console.log(params.row)
+                    console.log(params.column)
+                    console.log(params.state)
+                    grid.currentIndex=(params.column-1)*gridModel.heightModel+params.row-1
+                    var currentState =grid.currentItem.backgroundCellAlias.state
+                    grid.currentItem.backgroundCellAlias.state= currentState ? "" :"PLAY"
+                 }
+            }
         }
     }
+
 }

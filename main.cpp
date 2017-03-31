@@ -5,6 +5,8 @@
 #include <QSqlDatabase>
 #include <QDebug>
 #include <QtCore>
+#include <QSocketNotifier>
+#include <QQmlContext>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
@@ -36,6 +38,8 @@ int main(int argc, char *argv[])
 
     //TODO: wait for the connection in a thread
     Connection connection("127.0.0.1",1234);
+    QSocketNotifier sender(connection.getClientSocket(),QSocketNotifier::Type::Read);
+    QObject::connect(&sender,&QSocketNotifier::activated, &connection, &Connection::receive);
 
 #ifdef __WINMEDIA_DEBUG
     //Show available drivers
@@ -87,8 +91,8 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     QObject* rootObject=engine.rootObjects()[0];
+    engine.rootContext()->setContextProperty("Connection", &connection);
     QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
-
 
     return app.exec();
 }

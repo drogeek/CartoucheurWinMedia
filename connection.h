@@ -33,6 +33,7 @@
 #include "ramiProtocol.h"
 
 
+
 class Connection : public QObject
 {
     typedef struct{
@@ -43,13 +44,17 @@ class Connection : public QObject
 
     Q_OBJECT
 public:
-    Connection(std::string ip, int port);
+        Connection(std::string ip, int port);
     ~Connection();
     int send(Params params);
-    Params receive();
+    void receive();
+    SOCKET getServerSocket() { return m_sock; }
+    SOCKET getClientSocket() { return m_csock; }
 
 public slots:
     int send(int row, int column, bool state);
+signals:
+    void commandReceived(QVariantMap params);
 private:
     SOCKET m_sock;
     SOCKADDR_IN m_sin;
