@@ -7,12 +7,15 @@
 #include <QtCore>
 #include <QSocketNotifier>
 #include <QQmlContext>
+#include <QTcpServer>
+#include <QHostAddress>
+#include <QTcpSocket>
+#include <QSharedPointer>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
 #include "connection.h"
 #define __WINMEDIA_DEBUG
-
 
 int main(int argc, char *argv[])
 {
@@ -26,20 +29,20 @@ int main(int argc, char *argv[])
 #endif
 
 //TODO: to be replaced by data provided in a file
-//    const QString SERVER = "193.253.53.24";
-//    const QString PORT = "1437";
-//    const QString USER = "WinBizz";
-//    const QString PASSWORD = "WinBizz2012";
-    const QString SERVER = "127.0.0.1";
-    const QString PORT = "1433";
-    const QString USER = "test";
-    const QString PASSWORD = "test";
+    const QString SERVER = "193.253.53.24";
+    const QString PORT = "1437";
+    const QString USER = "WinBizz";
+    const QString PASSWORD = "WinBizz2012";
+//    const QString SERVER = "127.0.0.1";
+//    const QString PORT = "1433";
+//    const QString USER = "test";
+//    const QString PASSWORD = "test";
     const QString NAME = "CartridgeApplication";
 
-    //TODO: wait for the connection in a thread
-    Connection connection("127.0.0.1",1234);
-    QSocketNotifier sender(connection.getClientSocket(),QSocketNotifier::Type::Read);
-    QObject::connect(&sender,&QSocketNotifier::activated, &connection, &Connection::receive);
+    QTcpServer server;
+    server.listen(QHostAddress("127.0.0.1"),1234);
+    qDebug() << server.errorString();
+
 
 #ifdef __WINMEDIA_DEBUG
     //Show available drivers
@@ -60,7 +63,6 @@ int main(int argc, char *argv[])
     auto result = RamiProtocol::decrypt(data);
     RamiProtocol::print(result);
 
-//    connection.send(2,1,1);
 #endif
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
@@ -73,6 +75,7 @@ int main(int argc, char *argv[])
 
     if(db.open()){
         qDebug() << "Opening of DB successful";
+        //Record ourselves in the Computer table on the DB
         QSqlQuery query(QString("SELECT Name,Ip"
                                 "FROM [WinMedia].[dbo].[Computer]"
                                 "WHERE Name == %1").arg(NAME));
@@ -90,9 +93,17 @@ int main(int argc, char *argv[])
     qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
-    QObject* rootObject=engine.rootObjects()[0];
-    engine.rootContext()->setContextProperty("Connection", &connection);
-    QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
+    //TODO: handle multiple connections?
+    Connection connection;
+    QObject::connect(&server,&QTcpServer::newConnection,[&server,&engine,&connection](){
+        qDebug() << "New connection";
+        QTcpSocket* socket = server.nextPendingConnection();
+        connection.setSocket(socket);
+        QObject::connect(socket,&QTcpSocket::readyRead, &connection, &Connection::receive);
+        QObject* rootObject=engine.rootObjects()[0];
+        engine.rootContext()->setContextProperty("Connection", &connection);
+        QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
+    });
 
     return app.exec();
 }

@@ -53,12 +53,16 @@ RamiProtocol::Params RamiProtocol::decrypt(const Data& data){
 
 RamiProtocol::Params RamiProtocol::decrypt(const std::string& str){
     RamiProtocol::Params result;
-    std::smatch cm;
+    std::smatch sm;
     //TODO: create regex in case we increase number of columns possible
-    std::regex_match(str,cm,std::regex("[\x81\x82\x83\x84].!"));
-    std::string matchedStr = cm[0];
-    result.column=matchedStr[0]-0x80;
-    result.row=matchedStr[1]/16;
-    result.state=(matchedStr[1]<<4)>>4;
-    return result;
+    bool matches=std::regex_match(str,sm,std::regex("[\x81\x82\x83\x84].!"));
+    qDebug() << "rami protocol matches:" << matches;
+    //TODO: add exception in case it doesn't match the protocol
+    if(matches){
+        std::string matchedStr = sm[0];
+        result.column=matchedStr[0]-0x80;
+        result.row=matchedStr[1]/16;
+        result.state=(matchedStr[1]<<4)>>4;
+        return result;
+    }
 }
