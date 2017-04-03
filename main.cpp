@@ -95,11 +95,12 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     //TODO: handle multiple connections?
     Connection connection;
-    QObject::connect(&server,&QTcpServer::newConnection,[&server,&engine,&connection](){
+    QObject::connect(&server,&QTcpServer::newConnection,[&server,&connection](){
         qDebug() << "New connection";
         QSharedPointer<QTcpSocket> socket(server.nextPendingConnection());
         connection.setSocket(socket);
         QObject::connect(&(*socket),&QTcpSocket::readyRead, &connection, &Connection::receive);
+        //TODO: handle the disconnection
     });
     QObject* rootObject=engine.rootObjects()[0];
     engine.rootContext()->setContextProperty("Connection", &connection);
