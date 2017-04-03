@@ -20,8 +20,10 @@ public:
     enum RoleNames{
         PERFORMER = Qt::UserRole,
         TITLE = Qt::UserRole+1,
-        DURATION = Qt::UserRole+2,
-        ID = Qt::UserRole+3
+        START = Qt::UserRole+2,
+        STOP = Qt::UserRole+3,
+        STRETCH = Qt::UserRole+4,
+        ID = Qt::UserRole+5
     };
 
     explicit CartridgeModel(QObject *parent = 0);

@@ -29,14 +29,14 @@ int main(int argc, char *argv[])
 #endif
 
 //TODO: to be replaced by data provided in a file
-    const QString SERVER = "193.253.53.24";
-    const QString PORT = "1437";
-    const QString USER = "WinBizz";
-    const QString PASSWORD = "WinBizz2012";
-//    const QString SERVER = "127.0.0.1";
-//    const QString PORT = "1433";
-//    const QString USER = "test";
-//    const QString PASSWORD = "test";
+//    const QString SERVER = "193.253.53.24";
+//    const QString PORT = "1437";
+//    const QString USER = "WinBizz";
+//    const QString PASSWORD = "WinBizz2012";
+    const QString SERVER = "127.0.0.1";
+    const QString PORT = "1433";
+    const QString USER = "test";
+    const QString PASSWORD = "test";
     const QString NAME = "CartridgeApplication";
 
     QTcpServer server;
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     RamiProtocol::Params params;
     params.column=1;
     params.row=6;
-    params.state=1;
+    params.state=0;
     RamiProtocol::Data data=RamiProtocol::encrypt(params);
     RamiProtocol::print(data);
     auto result = RamiProtocol::decrypt(data);
@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
         connection.setSocket(socket);
         QObject::connect(&(*socket),&QTcpSocket::readyRead, &connection, &Connection::receive);
         //TODO: handle the disconnection
+        QObject::connect(&(*socket),&QTcpSocket::disconnected, &connection, &Connection::disconnect);
     });
     QObject* rootObject=engine.rootObjects()[0];
     engine.rootContext()->setContextProperty("Connection", &connection);

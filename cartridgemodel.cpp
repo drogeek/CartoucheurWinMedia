@@ -1,7 +1,7 @@
 #include "cartridgemodel.h"
 
 const QString CartridgeModel::QUERY=QString("\
-            SELECT Position,Performer,Title,Cartridge.Duration,ICartridge\
+            SELECT Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge\
             FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
@@ -13,7 +13,9 @@ CartridgeModel::CartridgeModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     m_roleNames[PERFORMER]= "performer";
-    m_roleNames[DURATION]= "duration";
+    m_roleNames[START]= "start";
+    m_roleNames[STOP]= "stop";
+    m_roleNames[STRETCH]= "stretch";
     m_roleNames[TITLE]= "title";
     m_roleNames[ID]= "id";
 
@@ -47,8 +49,10 @@ void CartridgeModel::listFromSQL(){
         QHash<RoleNames,QVariant> hash;
         hash.insert(PERFORMER,query.value(1));
         hash.insert(TITLE,query.value(2));
-        hash.insert(DURATION,query.value(3));
-        hash.insert(ID,query.value(4));
+        hash.insert(START,query.value(3));
+        hash.insert(STOP,query.value(4));
+        hash.insert(STRETCH,query.value(5));
+        hash.insert(ID,query.value(6));
         m_data.replace(position, hash);
     }
     while(m_data.count()<rowCount()){

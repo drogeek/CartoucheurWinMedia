@@ -17,8 +17,11 @@ public:
 
 public slots:
     void send(int row, int column, bool state);
+    void disconnect();
 signals:
     void commandReceived(QVariantMap params);
+    void connected();
+    void disconnected();
 private:
     QSharedPointer<QTcpSocket> m_sock;
 };

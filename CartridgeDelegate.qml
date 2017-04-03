@@ -5,6 +5,7 @@ import QtQuick.Controls 2.1
 MouseArea{
     property var currentIndex: index
     property var backgroundCellAlias: backgroundCell
+    property var playerState: false
     id: mouseArea
     height: grid.cellHeight-2
     width: grid.cellWidth-2
@@ -24,7 +25,11 @@ MouseArea{
         }
     }
 
-    onClicked: root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,false)
+    onClicked: {
+        mouseArea.playerState = !mouseArea.playerState;
+        console.log(mouseArea.playerState)
+        root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,mouseArea.playerState)
+    }
 
     onPressAndHold:{
         if(grid.state === ""){
@@ -155,11 +160,11 @@ MouseArea{
                     return ("00"+x).slice(-2)
                 }
 
-                property var currentDuration : duration
+                property var currentDuration : stop-start;
                 property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
                 font.pointSize: 18
-                text: duration ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
+                text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
 
                 Timer{
                     running: backgroundCell.state == "PLAY"
@@ -168,10 +173,11 @@ MouseArea{
                         if(newDuration > 0)
                             timeDisplay.currentDuration=newDuration
                         else
-                            backgroundCell.state = ""
+                            timeDisplay.currentDuration=0
                     }
-                    interval: 1000
+                    interval: 1000/stretch
                     repeat: true
+                    Component.onCompleted: console.log(stretch)
                 }
             }
 
@@ -233,7 +239,7 @@ MouseArea{
                 name: ""
                 PropertyChanges{
                     target: timeDisplay
-                    currentDuration: duration
+                    currentDuration: stop-start
                 }
             }
 

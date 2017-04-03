@@ -62,7 +62,7 @@ RamiProtocol::Params RamiProtocol::decrypt(const std::string& str){
         std::string matchedStr = sm[0];
         result.column=matchedStr[0]-0x80;
         result.row=matchedStr[1]/16;
-        result.state=(matchedStr[1]<<4)>>4;
+        result.state=matchedStr[1]&1;
         return result;
     }
 }
