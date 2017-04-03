@@ -97,13 +97,13 @@ int main(int argc, char *argv[])
     Connection connection;
     QObject::connect(&server,&QTcpServer::newConnection,[&server,&engine,&connection](){
         qDebug() << "New connection";
-        QTcpSocket* socket = server.nextPendingConnection();
+        QSharedPointer<QTcpSocket> socket(server.nextPendingConnection());
         connection.setSocket(socket);
-        QObject::connect(socket,&QTcpSocket::readyRead, &connection, &Connection::receive);
-        QObject* rootObject=engine.rootObjects()[0];
-        engine.rootContext()->setContextProperty("Connection", &connection);
-        QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
+        QObject::connect(&(*socket),&QTcpSocket::readyRead, &connection, &Connection::receive);
     });
+    QObject* rootObject=engine.rootObjects()[0];
+    engine.rootContext()->setContextProperty("Connection", &connection);
+    QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
 
     return app.exec();
 }

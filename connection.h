@@ -11,16 +11,16 @@ class Connection : public QObject
 
     Q_OBJECT
 public:
-    Connection(){ qDebug() << "Connection object created"; }
+    Connection();
     void receive();
-    void setSocket(QTcpSocket* socket) { m_sock = socket; }
+    void setSocket(QSharedPointer<QTcpSocket> socket);
 
 public slots:
     void send(int row, int column, bool state);
 signals:
     void commandReceived(QVariantMap params);
 private:
-    QTcpSocket* m_sock;
+    QSharedPointer<QTcpSocket> m_sock;
 };
 
 #endif // CONNECTION_H

@@ -1,5 +1,8 @@
 #include "connection.h"
 
+Connection::Connection(){
+}
+
 //TODO: verify errors?
 void Connection::send(int row, int column, bool state){
     RamiProtocol::Params params;
@@ -20,4 +23,8 @@ void Connection::receive(){
     result["state"]=tmp.state;
     qDebug() << "Command received";
     emit commandReceived(result);
+}
+
+void Connection::setSocket(QSharedPointer<QTcpSocket> socket){
+    m_sock = socket;
 }
