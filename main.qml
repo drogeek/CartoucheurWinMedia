@@ -14,6 +14,8 @@ ApplicationWindow {
     height: 768
     title: qsTr("Cartridge")
 
+    signal playerCommand(int row, int column, bool state);
+
     menuBar: MenuBar{
         Menu{
             title: "File"
@@ -55,6 +57,7 @@ ApplicationWindow {
         id: gridRect
         anchors.fill: parent
         GridView{
+            enabled: false
             id:grid
             anchors.fill: parent
             anchors.margins: 10
@@ -63,6 +66,7 @@ ApplicationWindow {
                 model: CartridgeModel{}
                 delegate: CartridgeDelegate{}
             }
+            delegate: CartridgeDelegate{}
             cellWidth: width/gridModel.widthModel
             cellHeight: height/gridModel.heightModel
             flow: GridView.FlowTopToBottom
@@ -72,17 +76,36 @@ ApplicationWindow {
                 State{
                     name: "MOVEMODE"
                     onCompleted: console.log("STATE MOVEMODE")
+                },
+                State{
+                    name: "DISABLED"
+                    onCompleted: console.log("STATE DISABLED")
                 }
+
             ]
-
-            Component.onCompleted: {
-            }
-
 
             displaced: Transition{
                 NumberAnimation { property:"scale"; to:1 }
             }
 
+            Connections{
+                target: Connection
+                onCommandReceived: {
+                    console.log(params.row)
+                    console.log(params.column)
+                    console.log(params.state)
+                    grid.currentIndex=(params.column-1)*gridModel.heightModel+params.row-1
+                    grid.currentItem.backgroundCellAlias.state= params.state ? "PLAY" : ""
+                 }
+                onDisconnected: {
+                    grid.enabled = false;
+//                    grid.state = "DISABLED"
+                }
+                onConnected: {
+                    grid.enabled = true;
+                }
+            }
         }
     }
+
 }

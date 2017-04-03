@@ -1,7 +1,11 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.1
+
+
 MouseArea{
     property var currentIndex: index
+    property var backgroundCellAlias: backgroundCell
+    property var playerState: false
     id: mouseArea
     height: grid.cellHeight-2
     width: grid.cellWidth-2
@@ -19,6 +23,12 @@ MouseArea{
             grid.currentItem.state = ""
             console.log(grid.currentItem.state)
         }
+    }
+
+    onClicked: {
+        mouseArea.playerState = !mouseArea.playerState;
+        console.log(mouseArea.playerState)
+        root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,mouseArea.playerState)
     }
 
     onPressAndHold:{
@@ -68,7 +78,9 @@ MouseArea{
         height: grid.cellHeight-2
         width: grid.cellWidth-2
         radius: 5
-        color: "#FAFAFA"
+        property var backgroundcolor1: "#FAFAFA"
+        property var backgroundcolor2: "#FFB366"
+        color: backgroundcolor1
         border.color: "#CCCCCC"
 
         SequentialAnimation{
@@ -97,7 +109,6 @@ MouseArea{
         Drag.hotSpot.x: backgroundCell.width/2
         Drag.hotSpot.y: backgroundCell.height/2
 
-
         DropArea{
             id: dropArea
             anchors.fill: parent
@@ -118,6 +129,7 @@ MouseArea{
         }
 
         Column{
+
             width: parent.width
             Text{
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -130,11 +142,46 @@ MouseArea{
             }
 
             Text{
-                property var min: Math.ceil(duration/3600)
+                id: timeDisplay
+
+                function formateHour(s){
+                    var milliToSec=Math.floor(s/1000)
+                    var sec=milliToSec%60
+                    var min=Math.floor(milliToSec/60)
+                    var hour=Math.floor(min/60)
+                    return {
+                        sec: padding(sec),
+                        min: padding(min),
+                        hour: padding(hour)
+                    }
+                }
+
+                function padding(x){
+                    return ("00"+x).slice(-2)
+                }
+
+                property var currentDuration : stop-start;
+                property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
                 font.pointSize: 18
-                text: min ? "<b><i>"+ min + "</b></i><i>min</i> " : ""
+                text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
+
+                Timer{
+                    running: backgroundCell.state == "PLAY"
+                    onTriggered: {
+                        var newDuration = timeDisplay.currentDuration-1000
+                        if(newDuration > 0)
+                            timeDisplay.currentDuration=newDuration
+                        else
+                            timeDisplay.currentDuration=0
+                    }
+                    interval: 1000/stretch
+                    repeat: true
+                    Component.onCompleted: console.log(stretch)
+                }
             }
+
+
         }
 
         Row{
@@ -152,26 +199,27 @@ MouseArea{
                 }
             }
 
-            ToolButton{
-                text: "►"
-                onClicked: {
-                    console.log(grid.model.widthModel)
-                    grid.model.widthModel++;
-                }
-            }
-            ToolButton{
-                text: "◼"
-                onClicked: {
-                    console.log(grid.model.heightModel)
-                    grid.model.heightModel++;
-                }
-            }
-            ToolButton{
-                text: "↺"
-                onClicked: console.log(id)
-            }
+//            ToolButton{
+//                text: "►"
+//                onClicked: {
+////                    backgroundCell.state = "PLAY"
+//                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,true)
+//                }
+
+//            }
+//            ToolButton{
+//                id: stopBtn
+//                text: "◼"
+//                onClicked: {
+////                    backgroundCell.state = ""
+//                }
+//            }
+//            ToolButton{
+//                text: "↺"
+//                onClicked: console.log(id)
+//            }
             states:State{
-                when: grid.state == "MOVEMODE"
+                when: grid.state === "MOVEMODE"
                 PropertyChanges {
                     target: controlRow
                     enabled: false
@@ -179,6 +227,35 @@ MouseArea{
             }
         }
 
+        states: [
+            State{
+                name: "PLAY"
+                PropertyChanges{
+                    target: backgroundCell
+                    color: backgroundCell.backgroundcolor2
+                }
+            },
+            State{
+                name: ""
+                PropertyChanges{
+                    target: timeDisplay
+                    currentDuration: stop-start
+                }
+            }
+
+        ]
+        transitions: [
+            Transition {
+                from: ""
+                to: "PLAY"
+                ColorAnimation {
+                    loops: Animation.Infinite
+                    to: backgroundCell.backgroundcolor2
+                    duration: 800
+                    easing.type: Easing.InOutBack
+                }
+            }
+        ]
     }
 
 }

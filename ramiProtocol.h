@@ -26,7 +26,7 @@ public:
     typedef struct Params{
         static const uchar adress=0x8;
         static const uchar ack='!';
-        uchar line;
+        uchar row;
         uchar column;
         bool state;
     }Params;
