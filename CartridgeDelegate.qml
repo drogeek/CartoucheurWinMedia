@@ -92,6 +92,19 @@ MouseArea{
             anchors.left: parent.left
             height: parent.height-1
             width: parent.width-(parent.width*timeDisplay.currentDuration)/(stop-start)
+            Behavior on width{
+                NumberAnimation{
+                    easing.type: Easing.InOutElastic
+                    duration: 1000/stretch
+                }
+            }
+        }
+
+        Behavior on color{
+
+            ColorAnimation {
+                duration: 2000
+            }
         }
 
         SequentialAnimation{
@@ -106,8 +119,6 @@ MouseArea{
                 property: "scale"; to: 1; duration: 1000; easing.type: Easing.OutBounce
             }
         }
-
-
 
         PropertyAnimation{
             running: grid.state === ""
