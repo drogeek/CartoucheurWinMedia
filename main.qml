@@ -56,6 +56,7 @@ ApplicationWindow {
     Rectangle{
         id: gridRect
         anchors.fill: parent
+
         GridView{
             enabled: false
             id:grid
@@ -76,12 +77,7 @@ ApplicationWindow {
                 State{
                     name: "MOVEMODE"
                     onCompleted: console.log("STATE MOVEMODE")
-                },
-                State{
-                    name: "DISABLED"
-                    onCompleted: console.log("STATE DISABLED")
                 }
-
             ]
 
             displaced: Transition{

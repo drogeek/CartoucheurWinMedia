@@ -78,10 +78,21 @@ MouseArea{
         height: grid.cellHeight-2
         width: grid.cellWidth-2
         radius: 5
-        property var backgroundcolor1: "#FAFAFA"
-        property var backgroundcolor2: "#FFB366"
-        color: backgroundcolor1
+        property var backgroundcolorNORMAL: "#FAFAFA"
+        property var backgroundcolorDISABLED: "#AAAAAA"
+        property var backgroundcolorINDICATOR: "#E65C00"
+        property var backgroundcolorPLAY: "#FFB366"
+        color: grid.enabled ? backgroundcolorNORMAL : backgroundcolorDISABLED
         border.color: "#CCCCCC"
+
+        Rectangle{
+            id: timeIndicator
+            color: parent.backgroundcolorINDICATOR
+            radius: parent.radius/2
+            anchors.left: parent.left
+            height: parent.height-1
+            width: parent.width-(parent.width*timeDisplay.currentDuration)/(stop-start)
+        }
 
         SequentialAnimation{
             loops: Animation.Infinite
@@ -177,7 +188,6 @@ MouseArea{
                     }
                     interval: 1000/stretch
                     repeat: true
-                    Component.onCompleted: console.log(stretch)
                 }
             }
 
@@ -199,25 +209,6 @@ MouseArea{
                 }
             }
 
-//            ToolButton{
-//                text: "►"
-//                onClicked: {
-////                    backgroundCell.state = "PLAY"
-//                    root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,true)
-//                }
-
-//            }
-//            ToolButton{
-//                id: stopBtn
-//                text: "◼"
-//                onClicked: {
-////                    backgroundCell.state = ""
-//                }
-//            }
-//            ToolButton{
-//                text: "↺"
-//                onClicked: console.log(id)
-//            }
             states:State{
                 when: grid.state === "MOVEMODE"
                 PropertyChanges {
@@ -232,7 +223,7 @@ MouseArea{
                 name: "PLAY"
                 PropertyChanges{
                     target: backgroundCell
-                    color: backgroundCell.backgroundcolor2
+                    color: backgroundCell.backgroundcolorPLAY
                 }
             },
             State{
@@ -250,8 +241,8 @@ MouseArea{
                 to: "PLAY"
                 ColorAnimation {
                     loops: Animation.Infinite
-                    to: backgroundCell.backgroundcolor2
-                    duration: 800
+                    to: backgroundCell.backgroundcolorPLAY
+                    duration: 1000/stretch
                     easing.type: Easing.InOutBack
                 }
             }
