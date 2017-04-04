@@ -33,6 +33,7 @@ ApplicationWindow {
     }
 
     toolBar: TabBar{
+
         id: tab
         anchors.fill: parent
         onCurrentIndexChanged: {
@@ -95,10 +96,32 @@ ApplicationWindow {
                  }
                 onDisconnected: {
                     grid.enabled = false;
+                    disconnectionPopup.opacity = 1
 //                    grid.state = "DISABLED"
                 }
                 onConnected: {
                     grid.enabled = true;
+                    disconnectionPopup.opacity = 0
+                }
+            }
+        }
+        Rectangle{
+            id: disconnectionPopup
+            opacity: 1
+            anchors.centerIn: parent
+            width: 300
+            height: 100
+            radius: 4
+            border.color: "grey"
+            border.width: 2
+            Text {
+                anchors.centerIn: parent
+                text: qsTr("<b>Disconnected</b>")
+            }
+            Behavior on opacity {
+                NumberAnimation{
+                    duration: 2000
+                    easing.type: Easing.OutQuint
                 }
             }
         }
