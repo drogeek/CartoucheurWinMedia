@@ -11,6 +11,7 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QSharedPointer>
+#include <QTimer>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     const QString USER = "test";
     const QString PASSWORD = "test";
     const QString NAME = "CartridgeApplication";
+    const QString IP = "127.0.0.1";
 
     QTcpServer server;
     server.listen(QHostAddress("127.0.0.1"),1234);
@@ -73,18 +75,50 @@ int main(int argc, char *argv[])
                 Pwd="+PASSWORD+";"
     );
 
+    QTimer timer;
     if(db.open()){
         qDebug() << "Opening of DB successful";
         //Record ourselves in the Computer table on the DB
-        QSqlQuery query(QString("SELECT Name,Ip"
-                                "FROM [WinMedia].[dbo].[Computer]"
-                                "WHERE Name == %1").arg(NAME));
-//        if(query.size()<=0){
-//            QSqlQuery insert(QString("INSERT INTO [WinMedia].[dbo].[Computer] (Name,Ip,Modify,X,Y)"
-//                                     "VALUES ("+NAME+","+","+"0,0"
-//                                     )
-//                             );
-//        }
+        QSqlQuery query;
+        qDebug() << QString("SELECT Ip \
+                            FROM [Winmedia].[dbo].[Computer] \
+                            WHERE Name = '%1'").arg(NAME);
+        auto result=query.exec(QString("SELECT Name,Ip \
+                                FROM [Winmedia].[dbo].[Computer] \
+                                WHERE Name = '%1'").arg(NAME));
+        if(!result){
+            qDebug() << query.lastError();
+        }
+        else{
+            query.next();
+            if(!query.isValid()){
+                qDebug() << "Can't find you in the DB, adding you";
+                QSqlQuery insert;
+                auto result = insert.exec(QString(
+                                     "INSERT INTO [WinMedia].[dbo].[Computer] (Name,Ip,Modify,X,Y,Command,Properties) \
+                                     VALUES ('"+NAME+"','"+IP+"',getutcdate(),0,0,'','')")
+                                    );
+                if(!result){
+                    qDebug() << insert.lastError();
+                }
+            }
+            else{
+                auto updateModify = [NAME](){
+                    QSqlQuery update;
+                    auto result = update.exec(
+                                "UPDATE [WinMedia].[dbo].[Computer] \
+                                SET modify=getutcdate() \
+                                WHERE name = '"+NAME+"'"
+                            );
+                    if(!result){
+                        qDebug() << update.lastError();
+                    }
+                };
+                updateModify();
+                QObject::connect(&timer,&QTimer::timeout, updateModify);
+                timer.start(5000);
+            }
+        }
     }
     else
         qDebug() << db.lastError();
