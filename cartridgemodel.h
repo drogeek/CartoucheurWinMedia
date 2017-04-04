@@ -5,6 +5,7 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include <QModelIndex>
+#include <QSqlError>
 #include "datapuller.h"
 
 #define DEFAULT_WIDTH 4
@@ -16,6 +17,8 @@ class CartridgeModel : public QAbstractListModel
     Q_PROPERTY(int widthModel READ widthModel WRITE setWidthModel NOTIFY widthModelChanged)
     Q_PROPERTY(int heightModel READ heightModel WRITE setHeightModel NOTIFY heightModelChanged)
     static const QString QUERY;
+    static const QString SWAP;
+    static const QString MOVE;
 public:
     enum RoleNames{
         PERFORMER = Qt::UserRole,
@@ -50,7 +53,7 @@ protected:
 public slots:
     void fitToDimension();
     void changePanel(int idPanel);
-    void swap(int from, int to);
+    void swap(int indexFrom, int indexTo, int idFrom, int idTo);
 
 signals:
     void panelChanged();

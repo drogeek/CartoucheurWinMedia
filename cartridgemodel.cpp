@@ -2,12 +2,24 @@
 
 const QString CartridgeModel::QUERY=QString("\
             SELECT Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge\
-            FROM [Winmedia].[dbo].[Cartridge],[Winmedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
+            FROM [WinMedia].[dbo].[Cartridge],[WinMedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.Panel = Panel.IPanel\
             AND Panel.IPanel = %1\
             AND Cartridge.Position < %2\
             ORDER BY Position");
+const QString CartridgeModel::SWAP=QString("\
+            UPDATE [WinMedia].[dbo].[Cartridge] \
+            SET Position = ( \
+                       SELECT SUM(Position) \
+                       FROM  [WinMedia].[dbo].[Cartridge] \
+                       WHERE ICartridge IN ('%1', '%2') \
+                       ) - Position \
+            WHERE ICartridge IN ('%1', '%2')");
+const QString CartridgeModel::MOVE=QString("\
+            UPDATE [WinMedia].[dbo].[Cartridge] \
+            SET Position = %1 \
+            WHERE ICartridge = %2");
 
 CartridgeModel::CartridgeModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -129,11 +141,26 @@ void CartridgeModel::changePanel(int idPanel){
     emit panelChanged();
 }
 
-void CartridgeModel::swap(int from, int to){
-    qDebug() << "from:" << m_data.at(from);
-    qDebug() << "to:" << m_data.at(to);
-    m_data.swap(from,to);
-    qDebug() << "new from:" << m_data.at(from);
-    qDebug() << "new to:" << m_data.at(to);
-    dataChanged(index(0),index(rowCount()-1));
+void CartridgeModel::swap(int indexFrom, int indexTo, int idFrom, int idTo){
+    qDebug() << "from:" << indexFrom;
+    qDebug() << "to:" << indexTo;
+    qDebug() << "idfrom:" << idFrom;
+    qDebug() << "idto:" << idTo;
+    if(idFrom == -1 && idTo == -1)
+        return;
+
+    QSqlQuery query;
+    bool isOk=false;
+    if(idFrom == -1)
+        isOk = query.exec(MOVE.arg(indexFrom).arg(idTo));
+    else if(idTo == -1)
+        isOk = query.exec(MOVE.arg(indexTo).arg(idFrom));
+    else
+        isOk = query.exec(SWAP.arg(idFrom).arg(idTo));
+    if(isOk){
+        m_data.swap(indexFrom,indexTo);
+        dataChanged(index(0),index(rowCount()-1));
+    }
+    else
+        qDebug() << query.lastError();
 }

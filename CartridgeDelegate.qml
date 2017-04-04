@@ -3,6 +3,7 @@ import QtQuick.Controls 2.1
 
 
 MouseArea{
+    property var itemId: id ? id : -1
     property var currentIndex: index
     property var backgroundCellAlias: backgroundCell
     property var playerState: false
@@ -87,23 +88,18 @@ MouseArea{
 
         Rectangle{
             id: timeIndicator
+            opacity: 0.6
             color: parent.backgroundcolorINDICATOR
-            radius: parent.radius/2
-            anchors.left: parent.left
-            height: parent.height-1
+            radius: parent.radius
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height-2
             width: parent.width-(parent.width*timeDisplay.currentDuration)/(stop-start)
             Behavior on width{
                 NumberAnimation{
-                    easing.type: Easing.InOutElastic
-                    duration: 1000/stretch
+                    easing.type: Easing.Linear
+                    easing.amplitude: 2
+                    duration: stretch ? 1000/stretch : 0
                 }
-            }
-        }
-
-        Behavior on color{
-
-            ColorAnimation {
-                duration: 2000
             }
         }
 
@@ -146,7 +142,12 @@ MouseArea{
                 //TODO
                 console.log("source:"+dropArea.drag.source.currentIndex)
                 console.log("dest:"+index)
-                gridModel.swap(dropArea.drag.source.currentIndex, index)
+                gridModel.swap(
+                            dropArea.drag.source.currentIndex,
+                            index,
+                            dropArea.drag.source.itemId,
+                            itemId
+                            )
             }
         }
 
@@ -252,6 +253,7 @@ MouseArea{
                 to: "PLAY"
                 ColorAnimation {
                     loops: Animation.Infinite
+                    from: backgroundCell.backgroundcolorNORMAL
                     to: backgroundCell.backgroundcolorPLAY
                     duration: 1000/stretch
                     easing.type: Easing.InOutBack
