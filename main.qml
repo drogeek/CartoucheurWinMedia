@@ -1,6 +1,6 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1 as Quick
 import QtQuick.Layouts 1.0
 import QtQml.Models 2.2
 
@@ -16,40 +16,47 @@ ApplicationWindow {
 
     signal playerCommand(int row, int column, bool state);
 
-    menuBar: MenuBar{
-        Menu{
-            title: "File"
-            MenuItem{
-                text: "Settings"
-                onTriggered: console.log("Propreties")
+    header:
+    RowLayout{
+        ToolBar{
+//            width: parent.width
+            ToolButton{
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "images/menu.png"
+                }
+                onClicked: optionsMenu.open()
+                Menu{
+                    id:optionsMenu
+                    title: "File"
+                    MenuItem{
+                        text: "Settings"
+                        onTriggered: console.log("Propreties")
+                    }
+                }
             }
         }
-    }
 
-    statusBar: StatusBar{
-        Label {
-            text: qsTr("status")
-        }
-    }
+        TabBar{
+            id: tab
+//            width: parent.width
+            onCurrentIndexChanged: {
+                console.log("tab n°"+currentIndex+" selected")
+                console.log("id:"+panelItem.itemAt(currentIndex).idTab)
+                gridModel.changePanel(panelItem.itemAt(currentIndex).idTab)
+                grid.state = ""
+            }
 
-    toolBar: TabBar{
-
-        id: tab
-        anchors.fill: parent
-        onCurrentIndexChanged: {
-            console.log("tab n°"+currentIndex+" selected")
-            console.log("id:"+panelItem.itemAt(currentIndex).idTab)
-            gridModel.changePanel(panelItem.itemAt(currentIndex).idTab)
-            grid.state = ""
-        }
-
-        Repeater{
-            id: panelItem
-            model: PanelModel{}
-            TabButton{
-                property var idTab: id
-                text: name
-                width: 100
+            Repeater{
+                id: panelItem
+                model: PanelModel{}
+                TabButton{
+                    property var idTab: id
+                    text: name
+                    width: 100
+                }
             }
         }
     }
