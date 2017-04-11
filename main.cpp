@@ -1,8 +1,5 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QSqlDatabase>
 #include <QDebug>
 #include <QtCore>
 #include <QSocketNotifier>
@@ -11,7 +8,8 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QSharedPointer>
-#include <QTimer>
+#include <QFile>
+#include <fstream>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
@@ -29,32 +27,31 @@ int main(int argc, char *argv[])
     const QString DRIVER = "SQL Server";
 #endif
 
-//TODO: to be replaced by data provided in a file
-//    const QString SERVER = "193.253.53.24";
-//    const QString PORT = "1437";
-//    const QString USER = "WinBizz";
-//    const QString PASSWORD = "WinBizz2012";
+    const QString WINMEDIA = "127.0.0.1";
+    const QString WINPORT = "1337";
     const QString SERVER = "127.0.0.1";
-    const QString PORT = "1433";
-    const QString USER = "test";
-    const QString PASSWORD = "test";
-    const QString NAME = "CartridgeApplication";
-    const QString IP = "127.0.0.1";
+    const QString SERVPORT = "1337";
+    const qint32 LOCALPORT = 1234;
+    const QString LOCALIP = "127.0.0.1";
+    Utils& util = Utils::getInstance();
+    util.setServerIp("127.0.0.1");
+    util.setServerPort(1337);
 
+    std::string fileStr = "\\\\";
+
+    std::ofstream file;
+    file.open(fileStr);
+    if(file.is_open()){
+        qDebug() << QString(fileStr.data()) << " exists";
+    }
+    else
+        qDebug() << QString(fileStr.data()) << " doesn't exist";
     QTcpServer server;
-    server.listen(QHostAddress("127.0.0.1"),1234);
+    server.listen(QHostAddress(LOCALIP),LOCALPORT);
     qDebug() << server.errorString();
 
 
 #ifdef __WINMEDIA_DEBUG
-    //Show available drivers
-    QStringList drivers = QSqlDatabase::drivers();
-    QStringList::const_iterator constIter;
-    qDebug() << "Available drivers:";
-    for(constIter=drivers.constBegin(); constIter != drivers.constEnd(); constIter++){
-        qDebug() << (*constIter).toLocal8Bit().constData();
-    }
-
     //Test the encryption and decryption protocole for RAMI cartridge
     RamiProtocol::Params params;
     params.column=1;
@@ -64,64 +61,7 @@ int main(int argc, char *argv[])
     RamiProtocol::print(data);
     auto result = RamiProtocol::decrypt(data);
     RamiProtocol::print(result);
-
 #endif
-
-    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-    db.setDatabaseName(
-                "Driver={"+DRIVER+"};\
-                Server="+SERVER+","+PORT+";\
-                Uid="+USER+";\
-                Pwd="+PASSWORD+";"
-    );
-
-    QTimer timer;
-    if(db.open()){
-        qDebug() << "Opening of DB successful";
-        //Record ourselves in the Computer table on the DB
-        QSqlQuery query;
-        qDebug() << QString("SELECT Ip \
-                            FROM [Winmedia].[dbo].[Computer] \
-                            WHERE Name = '%1'").arg(NAME);
-        auto result=query.exec(QString("SELECT Name,Ip \
-                                FROM [Winmedia].[dbo].[Computer] \
-                                WHERE Name = '%1'").arg(NAME));
-        if(!result){
-            qDebug() << query.lastError();
-        }
-        else{
-            query.next();
-            if(!query.isValid()){
-                qDebug() << "Can't find you in the DB, adding you";
-                QSqlQuery insert;
-                auto result = insert.exec(QString(
-                                     "INSERT INTO [WinMedia].[dbo].[Computer] (Name,Ip,Modify,X,Y,Command,Properties) \
-                                     VALUES ('"+NAME+"','"+IP+"',getutcdate(),0,0,'','')")
-                                    );
-                if(!result){
-                    qDebug() << insert.lastError();
-                }
-            }
-            else{
-                auto updateModify = [NAME](){
-                    QSqlQuery update;
-                    auto result = update.exec(
-                                "UPDATE [WinMedia].[dbo].[Computer] \
-                                SET modify=getutcdate() \
-                                WHERE name = '"+NAME+"'"
-                            );
-                    if(!result){
-                        qDebug() << update.lastError();
-                    }
-                };
-                updateModify();
-                QObject::connect(&timer,&QTimer::timeout, updateModify);
-                timer.start(5000);
-            }
-        }
-    }
-    else
-        qDebug() << db.lastError();
 
     qmlRegisterType<CartridgeModel>("org.winmedia.guiennet",1,0,"CartridgeModel");
     qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");

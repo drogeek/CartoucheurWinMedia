@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     datapuller.cpp \
     panelmodel.cpp \
     ramiProtocol.cpp \
-    connection.cpp
+    connection.cpp \
+    utils.cpp
 
 RESOURCES += qml.qrc
 
@@ -41,7 +42,8 @@ HEADERS += \
     datapuller.h \
     panelmodel.h \
     ramiProtocol.h \
-    connection.h
+    connection.h \
+    utils.h
 
 DISTFILES += \
     android/AndroidManifest.xml \
@@ -53,3 +55,5 @@ DISTFILES += \
     android/gradlew.bat
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+RC_ICONS = Logo-125px.ico

@@ -2,10 +2,14 @@
 #define CARTRIDGEMODEL_H
 
 #include <QAbstractListModel>
-#include <QSqlQuery>
 #include <QDebug>
 #include <QModelIndex>
-#include <QSqlError>
+#include <QTcpSocket>
+#include <QHostAddress>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include "utils.h"
 #include "datapuller.h"
 
 #define DEFAULT_WIDTH 4
@@ -70,12 +74,14 @@ private:
     int m_idPanel;
     QString m_formatedQuery;
     int m_width,m_height;
+    QTcpSocket m_sock;
 
     /*
      * Methods
      */
     void fillHolesInList(int maxPosition);
-    void listFromSQL();
+    void listFromJson();
+    void sendQuery();
     void load();
     void clear();
 };

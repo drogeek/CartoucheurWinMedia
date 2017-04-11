@@ -34,8 +34,16 @@ CartridgeModel::CartridgeModel(QObject *parent)
     //TODO: recover from file
     setWidthModel(DEFAULT_WIDTH);
     setHeightModel(DEFAULT_HEIGHT);
-    connect(this,&CartridgeModel::panelChanged,this,&CartridgeModel::load);
-    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::load);
+
+    Utils& util= Utils::getInstance();
+    m_sock.connectToHost(QHostAddress(util.getServerIp()),util.getServerPort());
+    qDebug() << "from CartridgeModel:";
+    qDebug() << m_sock.errorString();
+    connect(&m_sock,&QTcpSocket::connected,[this](){
+        connect(this,&CartridgeModel::panelChanged,this,&CartridgeModel::load);
+        connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::load);
+        connect(&m_sock,&QTcpSocket::readyRead,this,&CartridgeModel::listFromJson);
+    });
 }
 
         //TODO: implement headerData
@@ -47,24 +55,29 @@ bool CartridgeModel::setData(const QModelIndex &index, const QVariant &value, in
     return true;
 }
 
-void CartridgeModel::listFromSQL(){
-    qDebug() << "Data updated";
-    QSqlQuery query(m_formatedQuery);
+void CartridgeModel::sendQuery(){
+    qDebug() << "query sent";
+    m_sock.write(m_formatedQuery.toUtf8());
+}
 
-    int position;
+void CartridgeModel::listFromJson(){
+    qDebug() << "Data updated";
+
+    auto input = m_sock.readAll();
+    qDebug() << input;
     beginResetModel();
-    while(query.next()){
-        position = query.value(0).toInt();
+    for(auto cell : QJsonDocument::fromJson(input).array()){
+        QJsonObject obj = cell.toObject();
+        int position = obj["Position"].toInt();
         qDebug() << "Position = " << position;
         fillHolesInList(position);
-
         QHash<RoleNames,QVariant> hash;
-        hash.insert(PERFORMER,query.value(1));
-        hash.insert(TITLE,query.value(2));
-        hash.insert(START,query.value(3));
-        hash.insert(STOP,query.value(4));
-        hash.insert(STRETCH,query.value(5));
-        hash.insert(ID,query.value(6));
+        hash.insert(PERFORMER,obj["Performer"].toString());
+        hash.insert(TITLE,obj["Title"].toString());
+        hash.insert(START,obj["Start"].toInt());
+        hash.insert(STOP,obj["Stop"].toInt());
+        hash.insert(STRETCH,obj["Stretch"].toDouble());
+        hash.insert(ID,obj["ICartridge"].toInt());
         m_data.replace(position, hash);
     }
     while(m_data.count()<rowCount()){
@@ -126,8 +139,7 @@ void CartridgeModel::load(){
     qDebug() << "model reloaded";
     clear();
     m_formatedQuery = QUERY.arg(m_idPanel).arg(m_width*m_height);
-    listFromSQL();
-//    fitToDimension();
+    sendQuery();
 }
 
 void CartridgeModel::clear(){
@@ -149,18 +161,17 @@ void CartridgeModel::swap(int indexFrom, int indexTo, int idFrom, int idTo){
     if(idFrom == -1 && idTo == -1)
         return;
 
-    QSqlQuery query;
-    bool isOk=false;
+    int isOk=false;
     if(idFrom == -1)
-        isOk = query.exec(MOVE.arg(indexFrom).arg(idTo));
+        isOk = m_sock.write(MOVE.arg(indexFrom).arg(idTo).toUtf8());
     else if(idTo == -1)
-        isOk = query.exec(MOVE.arg(indexTo).arg(idFrom));
+        isOk = m_sock.write(MOVE.arg(indexTo).arg(idFrom).toUtf8());
     else
-        isOk = query.exec(SWAP.arg(idFrom).arg(idTo));
-    if(isOk){
+        isOk = m_sock.write(SWAP.arg(idFrom).arg(idTo).toUtf8());
+    if(isOk != -1){
         m_data.swap(indexFrom,indexTo);
         dataChanged(index(0),index(rowCount()-1));
     }
     else
-        qDebug() << query.lastError();
+        qDebug() << m_sock.errorString();
 }
