@@ -9,7 +9,6 @@ SOURCES += main.cpp \
     panelmodel.cpp \
     ramiProtocol.cpp \
     connection.cpp \
-    utils.cpp \
     clientnotifier.cpp \
     abstractnotifier.cpp
 
@@ -45,7 +44,6 @@ HEADERS += \
     panelmodel.h \
     ramiProtocol.h \
     connection.h \
-    utils.h \
     clientnotifier.h \
     abstractnotifier.h
 
