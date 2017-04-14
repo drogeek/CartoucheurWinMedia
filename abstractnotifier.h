@@ -30,26 +30,29 @@ protected:
     static const NotifType notifType;
     static const QString JSON_TYPE;
     static const QString JSON_DATA;
+    static const QString JSON_TARGET;
 
-    virtual void notification(QJsonValue value) = 0;
-    virtual void query(QJsonValue value) = 0;
+    virtual void notification(QString target,QJsonValue value) = 0;
+    virtual void query(QString target,QJsonValue value) = 0;
 public:
     static const QString NOTIFY;
     static const QString DB;
+    static const QString PANEL;
+    static const QString CARTRIDGE;
     AbstractNotifier();
     AbstractNotifier(QSharedPointer<QTcpSocket> sock);
-    void send(QJsonValue value, QString type);
+    void send(QJsonValue value, QString type,QString target);
     void setSocket(QSharedPointer<QTcpSocket> sock);
     virtual ~AbstractNotifier(){}
 
 signals:
-    newNotification(QJsonValue value);
-    newQuery(QJsonValue value);
+    newNotification(QString target,QJsonValue value);
+    newQuery(QString target,QJsonValue value);
 
 private slots:
     void parse();
 private:
-    QJsonDocument wrapWithType(QJsonValue data,QString type);
+    QJsonDocument wrapWithType(QJsonValue data,QString type,QString target);
 
 };
 
