@@ -51,7 +51,9 @@ ApplicationWindow {
 
             Repeater{
                 id: panelItem
-                model: PanelModel{}
+                model: PanelModel{
+                    notifier: Notifier
+                }
                 TabButton{
                     property var idTab: id
                     text: name
@@ -72,10 +74,11 @@ ApplicationWindow {
             anchors.margins: 10
             model: DelegateModel{
                 id: delegateModel
-                model: CartridgeModel{}
+                model: CartridgeModel{
+                    notifier: Notifier
+                }
                 delegate: CartridgeDelegate{}
             }
-            delegate: CartridgeDelegate{}
             cellWidth: width/gridModel.widthModel
             cellHeight: height/gridModel.heightModel
             flow: GridView.FlowTopToBottom

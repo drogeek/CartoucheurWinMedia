@@ -10,19 +10,10 @@ PanelModel::PanelModel(QObject *parent)
 {
      m_roleNames[ID]="id";
      m_roleNames[NAME]="name";
-     Utils& util = Utils::getInstance();
-     qDebug() << util.getServerIp();
-     qDebug() << util.getServerPort();
-     m_sock.connectToHost(QHostAddress(util.getServerIp()),util.getServerPort());
-     qDebug() << "from PanelModel:";
-     qDebug() << m_sock.errorString();
-     connect(&m_sock,&QTcpSocket::connected,this,&PanelModel::sendQuery);
-     connect(&m_sock,&QTcpSocket::readyRead,this,&PanelModel::listFromJson);
 }
 
 void PanelModel::sendQuery(){
-    qDebug() << "query sent for Panels";
-    m_sock.write(QUERY.toUtf8());
+    m_notifier->send(QUERY,ClientNotifier::DB,ClientNotifier::PANEL);
 }
 
 QVariant PanelModel::data(const QModelIndex &index, int role) const
@@ -45,16 +36,19 @@ int PanelModel::rowCount(const QModelIndex &parent) const{
     return m_data.count();
 }
 
-void PanelModel::listFromJson(){
-    qDebug() << "Panel query";
-    auto input = m_sock.readAll();
-    beginResetModel();
-    for(auto cell : QJsonDocument::fromJson(input).array()){
-        QJsonObject obj = cell.toObject();
-        QHash<RoleNames,QVariant> hash;
-        hash.insert(ID,obj["IPanel"].toInt());
-        hash.insert(NAME,obj["Name"].toString());
-        m_data.append(hash);
+void PanelModel::listFromJson(QString target,QJsonValue value){
+    if(target == ClientNotifier::PANEL){
+        qDebug() << "Panel query";
+        QJsonArray array = value.toArray();
+        beginResetModel();
+        m_data.clear();
+        for(auto cell : array){
+            QJsonObject obj = cell.toObject();
+            QHash<RoleNames,QVariant> hash;
+            hash.insert(ID,obj["IPanel"].toInt());
+            hash.insert(NAME,obj["Name"].toString());
+            m_data.append(hash);
+        }
+        endResetModel();
     }
-    endResetModel();
 }

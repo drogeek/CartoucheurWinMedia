@@ -3,15 +3,16 @@
 
 #include <QTcpSocket>
 #include <QAbstractListModel>
-#include <QJsonDocument>
+#include <QJsonValue>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QHostAddress>
-#include "utils.h"
+#include "clientnotifier.h"
 
 class PanelModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(ClientNotifier* notifier READ notifier WRITE setNotifier)
 
     static const QString QUERY;
 public:
@@ -27,15 +28,24 @@ public:
 
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
+    // Getters/Setters
+    ClientNotifier* notifier(){ return m_notifier; }
+    void setNotifier(ClientNotifier* notifier){
+        qDebug() << "notifier added to Panel";
+        m_notifier = notifier;
+        sendQuery();
+        connect(m_notifier,&ClientNotifier::newQuery,this,&PanelModel::listFromJson);
+    }
+
 protected:
     virtual QHash<int,QByteArray> roleNames() const override;
 
 private:
     QHash<int,QByteArray> m_roleNames;
     QList<QHash<RoleNames,QVariant>> m_data;
-    QTcpSocket m_sock;
+    ClientNotifier* m_notifier;
 
-    void listFromJson();
+    void listFromJson(QString target,QJsonValue value);
     void sendQuery();
 };
 

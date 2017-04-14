@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include "clientnotifier.h"
 #include "utils.h"
 #include "datapuller.h"
 
@@ -20,6 +21,7 @@ class CartridgeModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(int widthModel READ widthModel WRITE setWidthModel NOTIFY widthModelChanged)
     Q_PROPERTY(int heightModel READ heightModel WRITE setHeightModel NOTIFY heightModelChanged)
+    Q_PROPERTY(ClientNotifier* notifier READ notifier WRITE setNotifier)
     static const QString QUERY;
     static const QString SWAP;
     static const QString MOVE;
@@ -51,6 +53,14 @@ public:
         m_height = newHeight;
         emit heightModelChanged();
     }
+    ClientNotifier* notifier(){ return m_notifier; }
+    void setNotifier(ClientNotifier* notifier){
+        qDebug() << "notifier added to Cartridge";
+        m_notifier = notifier;
+        qDebug() << notifier;
+        connect(m_notifier,&ClientNotifier::newQuery,this,&CartridgeModel::listFromJson);
+    }
+
 protected:
     QHash<int,QByteArray> roleNames() const override;
 
@@ -74,13 +84,13 @@ private:
     int m_idPanel;
     QString m_formatedQuery;
     int m_width,m_height;
-    QTcpSocket m_sock;
+    ClientNotifier* m_notifier;
 
     /*
      * Methods
      */
     void fillHolesInList(int maxPosition);
-    void listFromJson();
+    void listFromJson(QString target,QJsonValue value);
     void sendQuery();
     void load();
     void clear();

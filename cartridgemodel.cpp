@@ -35,15 +35,8 @@ CartridgeModel::CartridgeModel(QObject *parent)
     setWidthModel(DEFAULT_WIDTH);
     setHeightModel(DEFAULT_HEIGHT);
 
-    Utils& util= Utils::getInstance();
-    m_sock.connectToHost(QHostAddress(util.getServerIp()),util.getServerPort());
-    qDebug() << "from CartridgeModel:";
-    qDebug() << m_sock.errorString();
-    connect(&m_sock,&QTcpSocket::connected,[this](){
-        connect(this,&CartridgeModel::panelChanged,this,&CartridgeModel::load);
-        connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::load);
-        connect(&m_sock,&QTcpSocket::readyRead,this,&CartridgeModel::listFromJson);
-    });
+    connect(this,&CartridgeModel::panelChanged,this,&CartridgeModel::load);
+//    connect(&m_updater,&IUpdateNotifier::dataUpdated,this,&CartridgeModel::load);
 }
 
         //TODO: implement headerData
@@ -57,36 +50,37 @@ bool CartridgeModel::setData(const QModelIndex &index, const QVariant &value, in
 
 void CartridgeModel::sendQuery(){
     qDebug() << "query sent";
-    m_sock.write(m_formatedQuery.toUtf8());
+    m_notifier->send(m_formatedQuery,ClientNotifier::DB,ClientNotifier::CARTRIDGE);
 }
 
-void CartridgeModel::listFromJson(){
-    qDebug() << "Data updated";
+void CartridgeModel::listFromJson(QString target,QJsonValue value){
+    if(target == ClientNotifier::CARTRIDGE){
+        qDebug() << "Data updated";
 
-    auto input = m_sock.readAll();
-    qDebug() << input;
-    beginResetModel();
-    for(auto cell : QJsonDocument::fromJson(input).array()){
-        QJsonObject obj = cell.toObject();
-        int position = obj["Position"].toInt();
-        qDebug() << "Position = " << position;
-        fillHolesInList(position);
-        QHash<RoleNames,QVariant> hash;
-        hash.insert(PERFORMER,obj["Performer"].toString());
-        hash.insert(TITLE,obj["Title"].toString());
-        hash.insert(START,obj["Start"].toInt());
-        hash.insert(STOP,obj["Stop"].toInt());
-        hash.insert(STRETCH,obj["Stretch"].toDouble());
-        hash.insert(ID,obj["ICartridge"].toInt());
-        m_data.replace(position, hash);
+        QJsonArray array = value.toArray();
+        beginResetModel();
+        for(auto cell : array){
+            QJsonObject obj = cell.toObject();
+            int position = obj["Position"].toInt();
+            qDebug() << "Position = " << position;
+            fillHolesInList(position);
+            QHash<RoleNames,QVariant> hash;
+            hash.insert(PERFORMER,obj["Performer"].toString());
+            hash.insert(TITLE,obj["Title"].toString());
+            hash.insert(START,obj["Start"].toInt());
+            hash.insert(STOP,obj["Stop"].toInt());
+            hash.insert(STRETCH,obj["Stretch"].toDouble());
+            hash.insert(ID,obj["ICartridge"].toInt());
+            m_data.replace(position, hash);
+        }
+        while(m_data.count()<rowCount()){
+            QHash<RoleNames,QVariant> empty;
+            m_data.append(empty);
+        }
+        endResetModel();
+            //TODO: send signal that data has changed
+    //    emit dataChanged(index(0,0),index(m_data.count()-1,0));
     }
-    while(m_data.count()<rowCount()){
-        QHash<RoleNames,QVariant> empty;
-        m_data.append(empty);
-    }
-    endResetModel();
-        //TODO: send signal that data has changed
-//    emit dataChanged(index(0,0),index(m_data.count()-1,0));
 }
 
 /* iteratively fill holes in the list */
@@ -161,17 +155,17 @@ void CartridgeModel::swap(int indexFrom, int indexTo, int idFrom, int idTo){
     if(idFrom == -1 && idTo == -1)
         return;
 
-    int isOk=false;
     if(idFrom == -1)
-        isOk = m_sock.write(MOVE.arg(indexFrom).arg(idTo).toUtf8());
+        m_notifier->send(MOVE.arg(indexFrom).arg(idTo),ClientNotifier::DB,ClientNotifier::CARTRIDGE);
     else if(idTo == -1)
-        isOk = m_sock.write(MOVE.arg(indexTo).arg(idFrom).toUtf8());
+        m_notifier->send(MOVE.arg(indexTo).arg(idFrom),ClientNotifier::DB,ClientNotifier::CARTRIDGE);
     else
-        isOk = m_sock.write(SWAP.arg(idFrom).arg(idTo).toUtf8());
-    if(isOk != -1){
-        m_data.swap(indexFrom,indexTo);
-        dataChanged(index(0),index(rowCount()-1));
-    }
-    else
-        qDebug() << m_sock.errorString();
+        m_notifier->send(SWAP.arg(idFrom).arg(idTo),ClientNotifier::DB,ClientNotifier::CARTRIDGE);
+//    if(isOk != -1){
+    //TODO: check for error before swapping
+    m_data.swap(indexFrom,indexTo);
+    dataChanged(index(0),index(rowCount()-1));
+//    }
+//    else
+//        qDebug() << m_sock.errorString();
 }
