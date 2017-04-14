@@ -46,8 +46,8 @@ public:
     virtual ~AbstractNotifier(){}
 
 signals:
-    newNotification(QString target,QJsonValue value);
-    newQuery(QString target,QJsonValue value);
+    void newNotification(QString target,QJsonValue value);
+    void newQuery(QString target,QJsonValue value);
 
 private slots:
     void parse();
