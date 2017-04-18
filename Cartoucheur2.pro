@@ -1,5 +1,6 @@
 QT += qml quick
 QT += sql widgets
+QT += xml
 
 CONFIG += c++11
 

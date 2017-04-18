@@ -9,6 +9,8 @@
 #include <QTcpSocket>
 #include <QSharedPointer>
 #include <QFile>
+#include <QDomDocument>
+#include <QDomElement>
 #include <fstream>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
@@ -17,21 +19,42 @@
 #include "clientnotifier.h"
 #define __WINMEDIA_DEBUG
 
+enum class Machine{
+    NAME,ADRESS,PORT
+};
+
+typedef unsigned int uint;
+
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
-#ifdef __linux__
-    const QString DRIVER = "ODBC Driver 13 for SQL Server";
-#elif _WIN32
-    const QString DRIVER = "SQL Server";
-#endif
+    QString serverAdress = "127.0.0.1";
+    qint32 serverPort = 1337;
+    QString LOCALIP = "127.0.0.1";
+    qint32 LOCALPORT = 1234;
 
-    const QString SERVER = "127.0.0.1";
-    const qint32 SERVPORT = 1337;
-    const QString LOCALIP = "127.0.0.1";
-    const qint32 LOCALPORT = 1234;
+    QDomDocument doc("settings");
+    QFile file("settings.conf");
+    if(!file.open(QIODevice::ReadWrite))
+        qDebug() << "settings.conf not found";
+    if(!doc.setContent(&file)){
+        qDebug() << "malformed settings.conf";
+    }
+    file.close();
+
+    auto machines = doc.elementsByTagName("machine");
+    for(int i=0; i<machines.size(); i++){
+        QDomElement elem = machines.item(i).toElement();
+        auto children = elem.childNodes();
+        if(children.item((uint)Machine::NAME).toElement().text() == "delegate"){
+            serverAdress = children.item((uint)Machine::ADRESS).toElement().text();
+            serverPort = children.item((uint)Machine::PORT).toElement().text().toInt();
+        }
+    }
+
+
 
     QTcpServer server;
     server.listen(QHostAddress(LOCALIP),LOCALPORT);
@@ -57,7 +80,7 @@ int main(int argc, char *argv[])
     qDebug() << &notifier;
 
     QSharedPointer<QTcpSocket> notifierSock(new QTcpSocket());
-    notifierSock->connectToHost(QHostAddress(SERVER),SERVPORT);
+    notifierSock->connectToHost(QHostAddress(serverAdress),serverPort);
     QObject::connect(&(*notifierSock),&QTcpSocket::connected,[&notifier,notifierSock,&engine](){
         notifier.setSocket(notifierSock);
         engine.rootContext()->setContextProperty("Notifier", &notifier);
