@@ -174,7 +174,6 @@ MouseArea{
                 id: timeDisplay
                 width: parent.width
                 fontSizeMode: Text.HorizontalFit
-                anchors.bottom: numberIndicator.top
 
                 function formateHour(s){
                     var milliToSec=Math.floor(s/1000)
@@ -226,10 +225,9 @@ MouseArea{
                 height: width
                 radius: 5
                 Text{
-                    anchors.centerIn: parent
                     width: parent.width
                     height: parent.height
-                    fontSizeMode: Text.fit
+                    fontSizeMode: Text.Fit
                     text: (index)%gridModel.heightModel + 1
                 }
             }

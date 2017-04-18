@@ -10,7 +10,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include "clientnotifier.h"
-#include "utils.h"
 #include "datapuller.h"
 
 #define DEFAULT_WIDTH 4
