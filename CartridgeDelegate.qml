@@ -152,20 +152,29 @@ MouseArea{
         }
 
         Column{
-
             width: parent.width
+
             Text{
                 anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width
+                elide: Text.ElideRight
+                fontSizeMode: Text.HorizontalFit
                 text: performer ? "<b>"+performer+"</b>" : ""
             }
 
             Text{
                 anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width
+                elide: Text.ElideRight
+                fontSizeMode: Text.HorizontalFit
                 text: title ? title : ""
             }
 
             Text{
                 id: timeDisplay
+                width: parent.width
+                fontSizeMode: Text.HorizontalFit
+                anchors.bottom: numberIndicator.top
 
                 function formateHour(s){
                     var milliToSec=Math.floor(s/1000)
@@ -186,7 +195,7 @@ MouseArea{
                 property var currentDuration : stop-start;
                 property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
-                font.pointSize: 18
+//                font.pointSize: 18
                 text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
 
                 Timer{
@@ -206,29 +215,33 @@ MouseArea{
 
         }
 
-        Row{
-            id: controlRow
-            anchors.bottom: backgroundCell.bottom
+//        Row{
+//            id: controlRow
             Rectangle{
+                id: numberIndicator
+                opacity: 0.6
+                anchors.bottom: backgroundCell.bottom
                 color: Qt.darker(backgroundCell.color)
-                width: 20
-                height: 20
+                width: Math.min(4 + grid.cellWidth/8,20)
+                height: width
                 radius: 5
-                anchors.bottom: parent.bottom
                 Text{
                     anchors.centerIn: parent
+                    width: parent.width
+                    height: parent.height
+                    fontSizeMode: Text.fit
                     text: (index)%gridModel.heightModel + 1
                 }
             }
 
-            states:State{
-                when: grid.state === "MOVEMODE"
-                PropertyChanges {
-                    target: controlRow
-                    enabled: false
-                }
-            }
-        }
+//            states:State{
+//                when: grid.state === "MOVEMODE"
+//                PropertyChanges {
+//                    target: controlRow
+//                    enabled: false
+//                }
+//            }
+//        }
 
         states: [
             State{

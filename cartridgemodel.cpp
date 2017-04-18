@@ -144,6 +144,10 @@ void CartridgeModel::clear(){
 
 void CartridgeModel::changePanel(int idPanel){
     m_idPanel = idPanel;
+    QJsonObject obj;
+    obj.insert(ClientNotifier::JSON_TYPE,QString(ClientNotifier::notifType.TABHASCHANGED));
+    obj.insert(ClientNotifier::JSON_DATA,idPanel);
+    m_notifier->send(obj,ClientNotifier::NOTIFY,ClientNotifier::CARTRIDGE);
     emit panelChanged();
 }
 
@@ -164,6 +168,7 @@ void CartridgeModel::swap(int indexFrom, int indexTo, int idFrom, int idTo){
 //    if(isOk != -1){
     //TODO: check for error before swapping
     m_data.swap(indexFrom,indexTo);
+    changePanel(m_idPanel);
     dataChanged(index(0),index(rowCount()-1));
 //    }
 //    else
