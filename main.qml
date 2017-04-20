@@ -2,6 +2,7 @@ import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Controls 2.1 as Quick
 import QtQuick.Layouts 1.0
+import QtQuick.Dialogs 1.2
 import QtQml.Models 2.2
 
 import org.winmedia.guiennet 1.0
@@ -28,12 +29,53 @@ ApplicationWindow {
                     source: "images/menu.png"
                 }
                 onClicked: optionsMenu.open()
-                Menu{
-                    id:optionsMenu
-                    title: "File"
-                    MenuItem{
-                        text: "Settings"
-                        onTriggered: console.log("Propreties")
+            }
+
+            Quick.Dialog{
+                id: optionsMenu
+                title: qsTr("settings")
+                x: Math.round((root.width - width) / 2)
+                y: Math.round(root.height / 6)
+                width: Math.round(Math.min(root.width, root.height) / 3 * 2)
+                modal: true
+                focus: true
+                standardButtons: Dialog.Ok | Dialog.Cancel
+                onAccepted: {
+                    var newServerIp = serveripinput.text, newServerPort = serverportinput.value
+                    console.log(newServerIp)
+                    console.log(newServerPort)
+                    if(newServerIp !== "")
+                        Options.serverIp = newServerIp
+
+                    Options.serverPort = serverportinput.value
+                    Options.writeToFile();
+                    optionsMenu.close()
+                }
+
+                contentItem:
+                ColumnLayout{
+                    Label{
+                        text: qsTr("Server ip")
+                    }
+                    TextField{
+                        id: serveripinput
+                        inputMethodHints: Qt.ImhDigitsOnly
+                        text: Options.serverIp
+                        Keys.onReturnPressed: {
+                            serverportinput.focus = true
+                        }
+                    }
+
+                    Label{
+                        text: qsTr("Server port")
+                    }
+
+                    SpinBox{
+                        id: serverportinput
+                        editable: true
+                        from: 0
+                        to: 65535
+                        value: Options.serverPort
                     }
                 }
             }
