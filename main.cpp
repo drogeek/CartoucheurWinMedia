@@ -8,20 +8,15 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <QSharedPointer>
-#include <QFile>
-#include <QDomDocument>
-#include <QDomElement>
+#include <QNetworkInterface>
 #include <fstream>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
 #include "connection.h"
 #include "clientnotifier.h"
+#include "optionsxml.h"
 #define __WINMEDIA_DEBUG
-
-enum class Machine{
-    NAME,ADRESS,PORT
-};
 
 typedef unsigned int uint;
 
@@ -32,29 +27,22 @@ int main(int argc, char *argv[])
 
     QString serverAdress = "127.0.0.1";
     qint32 serverPort = 1337;
-    QString LOCALIP = "127.0.0.1";
+    QString LOCALIP = "192.168.0.128";
     qint32 LOCALPORT = 1234;
 
-    QDomDocument doc("settings");
-    QFile file("settings.conf");
-    if(!file.open(QIODevice::ReadWrite))
-        qDebug() << "settings.conf not found";
-    if(!doc.setContent(&file)){
-        qDebug() << "malformed settings.conf";
-    }
-    file.close();
+    OptionsXML options;
 
-    auto machines = doc.elementsByTagName("machine");
-    for(int i=0; i<machines.size(); i++){
-        QDomElement elem = machines.item(i).toElement();
-        auto children = elem.childNodes();
-        if(children.item((uint)Machine::NAME).toElement().text() == "delegate"){
-            serverAdress = children.item((uint)Machine::ADRESS).toElement().text();
-            serverPort = children.item((uint)Machine::PORT).toElement().text().toInt();
+    for(auto interface : QNetworkInterface::allInterfaces()){
+        if(!interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
+                interface.flags().testFlag(QNetworkInterface::IsUp)){
+            for(auto networkAdressEntry : interface.addressEntries()){
+                auto ip = networkAdressEntry.ip();
+                if(ip.protocol() == QAbstractSocket::IPv4Protocol){
+                    qDebug() << ip;
+                }
+            }
         }
     }
-
-
 
     QTcpServer server;
     server.listen(QHostAddress(LOCALIP),LOCALPORT);
@@ -79,11 +67,13 @@ int main(int argc, char *argv[])
     ClientNotifier notifier;
     qDebug() << &notifier;
 
-    QSharedPointer<QTcpSocket> notifierSock(new QTcpSocket());
-    notifierSock->connectToHost(QHostAddress(serverAdress),serverPort);
-    QObject::connect(&(*notifierSock),&QTcpSocket::connected,[&notifier,notifierSock,&engine](){
-        notifier.setSocket(notifierSock);
-        engine.rootContext()->setContextProperty("Notifier", &notifier);
+    QObject::connect(&options,&OptionsXML::configChanged,[&options,&notifier,&engine](){
+        QSharedPointer<QTcpSocket> notifierSock(new QTcpSocket());
+        notifierSock->connectToHost(QHostAddress(options.serverIp()),options.serverPort());
+        QObject::connect(&(*notifierSock),&QTcpSocket::connected,[&notifier,notifierSock,&engine](){
+            notifier.setSocket(notifierSock);
+            engine.rootContext()->setContextProperty("Notifier", &notifier);
+        });
     });
 
     /* Rami server*/
@@ -101,6 +91,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     engine.rootContext()->setContextProperty("Connection", &connection);
+    engine.rootContext()->setContextProperty("Options", &options);
     QObject* rootObject=engine.rootObjects()[0];
     QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
 

@@ -11,7 +11,8 @@ SOURCES += main.cpp \
     ramiProtocol.cpp \
     connection.cpp \
     clientnotifier.cpp \
-    abstractnotifier.cpp
+    abstractnotifier.cpp \
+    optionsxml.cpp
 
 RESOURCES += qml.qrc
 
@@ -46,7 +47,8 @@ HEADERS += \
     ramiProtocol.h \
     connection.h \
     clientnotifier.h \
-    abstractnotifier.h
+    abstractnotifier.h \
+    optionsxml.h
 
 DISTFILES += \
     android/AndroidManifest.xml \
