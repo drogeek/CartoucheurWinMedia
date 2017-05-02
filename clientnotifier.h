@@ -10,8 +10,8 @@ public:
     ClientNotifier();
     ClientNotifier(QSharedPointer<QTcpSocket> socket);
 
-    void notification(QString target,QJsonValue value) override;
-    void query(QString target,QJsonValue value) override;
+//    void notification(QString target,QJsonValue value) override;
+//    void query(QString target,QJsonValue value) override;
 };
 
 #endif // CLIENTNOTIFIER_H
