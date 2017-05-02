@@ -50,11 +50,11 @@ bool CartridgeModel::setData(const QModelIndex &index, const QVariant &value, in
 
 void CartridgeModel::sendQuery(){
     qDebug() << "query sent";
-    m_notifier->send(m_formatedQuery,ClientNotifier::DB,ClientNotifier::CARTRIDGE);
+    m_notifier->send(m_formatedQuery,ClientNotifier::TYPE_DB,ClientNotifier::TARGET_CARTRIDGE);
 }
 
 void CartridgeModel::listFromJson(QString target,QJsonValue value){
-    if(target == ClientNotifier::CARTRIDGE){
+    if(target == ClientNotifier::TARGET_CARTRIDGE){
         qDebug() << "Data updated";
 
         QJsonArray array = value.toArray();
@@ -147,7 +147,7 @@ void CartridgeModel::changePanel(int idPanel){
     QJsonObject obj;
     obj.insert(ClientNotifier::JSON_TYPE,QString(ClientNotifier::notifType.TABHASCHANGED));
     obj.insert(ClientNotifier::JSON_DATA,idPanel);
-    m_notifier->send(obj,ClientNotifier::NOTIFY,ClientNotifier::CARTRIDGE);
+    m_notifier->send(obj,ClientNotifier::TYPE_NOTIFY,ClientNotifier::TARGET_CARTRIDGE);
     emit panelChanged();
 }
 
@@ -160,11 +160,11 @@ void CartridgeModel::swap(int indexFrom, int indexTo, int idFrom, int idTo){
         return;
 
     if(idFrom == -1)
-        m_notifier->send(MOVE.arg(indexFrom).arg(idTo),ClientNotifier::DB,ClientNotifier::CARTRIDGE);
+        m_notifier->send(MOVE.arg(indexFrom).arg(idTo),ClientNotifier::TYPE_DB,ClientNotifier::TARGET_CARTRIDGE);
     else if(idTo == -1)
-        m_notifier->send(MOVE.arg(indexTo).arg(idFrom),ClientNotifier::DB,ClientNotifier::CARTRIDGE);
+        m_notifier->send(MOVE.arg(indexTo).arg(idFrom),ClientNotifier::TYPE_DB,ClientNotifier::TARGET_CARTRIDGE);
     else
-        m_notifier->send(SWAP.arg(idFrom).arg(idTo),ClientNotifier::DB,ClientNotifier::CARTRIDGE);
+        m_notifier->send(SWAP.arg(idFrom).arg(idTo),ClientNotifier::TYPE_DB,ClientNotifier::TARGET_CARTRIDGE);
 //    if(isOk != -1){
     //TODO: check for error before swapping
     m_data.swap(indexFrom,indexTo);

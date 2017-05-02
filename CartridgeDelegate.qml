@@ -6,7 +6,6 @@ MouseArea{
     property var itemId: id ? id : -1
     property var currentIndex: index
     property var backgroundCellAlias: backgroundCell
-    property var playerState: false
     id: mouseArea
     height: grid.cellHeight-2
     width: grid.cellWidth-2
@@ -27,9 +26,9 @@ MouseArea{
     }
 
     onClicked: {
-        mouseArea.playerState = !mouseArea.playerState;
-        console.log(mouseArea.playerState)
-        root.playerCommand((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,mouseArea.playerState)
+        //TODO: playerstate necessary?
+        var nextState = mouseArea.state === "PLAY" ? false : true
+        Notifier.sendRami((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,nextState)
     }
 
     onPressAndHold:{
