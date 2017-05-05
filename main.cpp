@@ -20,80 +20,54 @@
 
 typedef unsigned int uint;
 
+void connectToWin(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options);
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
-    QString serverAdress = "127.0.0.1";
-    qint32 serverPort = 1337;
-    QString LOCALIP = "192.168.0.128";
-    qint32 LOCALPORT = 1234;
+    QString LOCALIP = "127.0.0.1";
 
+    QCoreApplication::setOrganizationName("WinMedia");
+    QCoreApplication::setOrganizationDomain("winmedia.org");
+    QCoreApplication::setApplicationName("Cartridge");
     OptionsXML options;
 
-    for(auto interface : QNetworkInterface::allInterfaces()){
-        if(!interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
-                interface.flags().testFlag(QNetworkInterface::IsUp)){
-            for(auto networkAdressEntry : interface.addressEntries()){
-                auto ip = networkAdressEntry.ip();
-                if(ip.protocol() == QAbstractSocket::IPv4Protocol){
-                    qDebug() << ip;
-                }
-            }
-        }
-    }
-
-    QTcpServer server;
-    server.listen(QHostAddress(LOCALIP),LOCALPORT);
-    qDebug() << server.errorString();
-
-
-#ifdef __WINMEDIA_DEBUG
-    //Test the encryption and decryption protocole for RAMI cartridge
-    RamiProtocol::Params params;
-    params.column=1;
-    params.row=6;
-    params.state=0;
-    RamiProtocol::Data data=RamiProtocol::encrypt(params);
-    RamiProtocol::print(data);
-    auto result = RamiProtocol::decrypt(data);
-    RamiProtocol::print(result);
-#endif
-
+    ClientNotifier notifier;
     QQmlApplicationEngine engine;
 
-    /* Notifier */
-    ClientNotifier notifier;
-    qDebug() << &notifier;
-
-    QObject::connect(&options,&OptionsXML::configChanged,[&options,&notifier,&engine](){
-        QSharedPointer<QTcpSocket> notifierSock(new QTcpSocket());
-        notifierSock->connectToHost(QHostAddress(options.serverIp()),options.serverPort());
-        QObject::connect(&(*notifierSock),&QTcpSocket::connected,[&notifier,notifierSock,&engine](){
-            notifier.setSocket(notifierSock);
-            engine.rootContext()->setContextProperty("Notifier", &notifier);
-        });
-    });
-
-    /* Rami server*/
-    Connection connection;
-    QObject::connect(&server,&QTcpServer::newConnection,[&server,&connection,&engine](){
-        qDebug() << "New connection";
-        QSharedPointer<QTcpSocket> socket(server.nextPendingConnection());
-        connection.setSocket(socket);
-        QObject::connect(&(*socket),&QTcpSocket::readyRead, &connection, &Connection::receive);
-        //TODO: handle the disconnection
-        QObject::connect(&(*socket),&QTcpSocket::disconnected, &connection, &Connection::disconnect);
+    QSharedPointer<QTcpServer> server(new QTcpServer());
+    connectToWin(server, &notifier, &options);
+    QObject::connect(&options,&OptionsXML::configChanged,[&LOCALIP,&options,&server,&notifier](){
+        if (server->isListening()){
+            notifier.disconnect();
+            server->close();
+            server = QSharedPointer<QTcpServer>(new QTcpServer());
+        }
+        connectToWin(server, &notifier, &options);
     });
 
     qmlRegisterType<CartridgeModel>("org.winmedia.guiennet",1,0,"CartridgeModel");
     qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
-    engine.rootContext()->setContextProperty("Connection", &connection);
     engine.rootContext()->setContextProperty("Options", &options);
-    QObject* rootObject=engine.rootObjects()[0];
-    QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&connection,SLOT(send(int,int,bool)));
+    engine.rootContext()->setContextProperty("Notifier", &notifier);
 
     return app.exec();
+}
+
+
+void connectToWin(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options){
+    bool serverResp = server->listen(QHostAddress("127.0.0.1"),options->getPort());
+        if(serverResp){
+            QObject::connect(&(*server),&QTcpServer::newConnection,[server,notifier](){
+                qDebug() << "New connection";
+                QSharedPointer<QTcpSocket> socket(server->nextPendingConnection());
+                notifier->setSocket(socket);
+                QObject::connect(&(*socket),&QTcpSocket::disconnected, notifier, &ClientNotifier::disconnect);
+            });
+
+        }
+        else
+            qDebug() << server->errorString();
 }

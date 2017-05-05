@@ -2,46 +2,35 @@
 #define OPTIONSXML_H
 
 #include <QObject>
-#include <QDomElement>
-#include <QDomDocument>
 #include <QFile>
 #include <QDebug>
+#include <QSettings>
+#include <QNetworkInterface>
 
 class OptionsXML : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString serverIp MEMBER m_serverIp NOTIFY serverIpChanged)
-    Q_PROPERTY(qint16 serverPort MEMBER m_serverPort NOTIFY serverPortChanged)
+    Q_PROPERTY(qint16 port READ getPort WRITE setPort NOTIFY portChanged)
 public:
     OptionsXML();
-    QString serverIp(){
-        return m_serverIp;
-    }
-    qint16 serverPort(){
-        return m_serverPort;
-    }
-    void setServerIp(QString ip){
-        m_serverIp = ip;
-        emit serverIpChanged();
-    }
-    void setServerPort(qint16 port){
-        m_serverPort = port;
-        emit serverPortChanged();
-    }
+    Q_INVOKABLE QList<QString> getLocalIps();
 
 public slots:
-    void readFromFile();
-    void writeToFile();
+    void persistConfig();
+    void readConfig();
+    qint16 getPort(){ return m_port; }
+    void setPort(qint16 port){
+        m_port = port;
+        emit portChanged();
+    }
+
 signals:
-    void serverPortChanged();
-    void serverIpChanged();
+    void portChanged();
     void configChanged();
 private:
-    static const QString m_fileName;
-    QString m_serverIp;
-    qint16 m_serverPort;
-    QDomDocument m_doc;
-
+    static const QString APPPORT;
+    QSettings m_options;
+    qint16 m_port;
 };
 
 #endif // OPTIONSXML_H

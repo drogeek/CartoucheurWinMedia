@@ -15,8 +15,6 @@ ApplicationWindow {
     height: 768
     title: qsTr("Cartridge")
 
-    signal playerCommand(int row, int column, bool state);
-
     header:
     RowLayout{
         ToolBar{
@@ -35,36 +33,62 @@ ApplicationWindow {
                 id: optionsMenu
                 title: qsTr("settings")
                 x: Math.round((root.width - width) / 2)
-                y: Math.round(root.height / 6)
+                y: Math.round((root.height - height) / 2)
                 width: Math.round(Math.min(root.width, root.height) / 3 * 2)
                 modal: true
                 focus: true
                 standardButtons: Dialog.Ok | Dialog.Cancel
                 onAccepted: {
-                    var newServerIp = serveripinput.text, newServerPort = serverportinput.value
-                    console.log(newServerIp)
-                    console.log(newServerPort)
-                    if(newServerIp !== "")
-                        Options.serverIp = newServerIp
-
-                    Options.serverPort = serverportinput.value
-                    Options.writeToFile();
+                    Options.port = serverportinput.value
+                    Options.persistConfig();
                     optionsMenu.close()
                 }
+                Component.onCompleted: optionDialog.refreshLocalIps()
 
                 contentItem:
                 ColumnLayout{
-                    Label{
-                        text: qsTr("Server ip")
+                    id: optionDialog
+                    function refreshLocalIps(){
+                        localIps.clear()
+                        Options.getLocalIps().forEach(function(elem){
+                                localIps.append({cell: elem})
+                            })
                     }
-                    TextField{
-                        id: serveripinput
-                        inputMethodHints: Qt.ImhDigitsOnly
-                        text: Options.serverIp
-                        Keys.onReturnPressed: {
-                            serverportinput.focus = true
+
+                    ListModel{
+                        id:localIps
+                        ListElement{
+                            cell: "127.0.0.1"
                         }
                     }
+
+                    Component{
+                        id:localIpsDelegate
+                        Item{
+                            height: 10
+                            Text{
+                                text: cell
+                            }
+                        }
+                    }
+
+                    Label{
+                        id: localIpsLabel
+                        text: qsTr("Local ip adresses")
+                    }
+                    Button{
+                        id: localIpsRefreshBtn
+                        text: qsTr("Refresh")
+                        onClicked: optionDialog.refreshLocalIps()
+                    }
+
+                    ListView{
+                        model: localIps
+                        height: 100
+                        delegate: localIpsDelegate
+                    }
+
+
 
                     Label{
                         text: qsTr("Server port")
@@ -75,7 +99,7 @@ ApplicationWindow {
                         editable: true
                         from: 0
                         to: 65535
-                        value: Options.serverPort
+                        value: Options.port
                     }
                 }
             }
@@ -110,7 +134,7 @@ ApplicationWindow {
         anchors.fill: parent
 
         GridView{
-            enabled: false
+            enabled: Notifier.connected
             id:grid
             anchors.fill: parent
             anchors.margins: 10
@@ -138,7 +162,7 @@ ApplicationWindow {
             }
 
             Connections{
-                target: Connection
+                target: Notifier
                 onCommandReceived: {
                     console.log(params.row)
                     console.log(params.column)
@@ -146,6 +170,7 @@ ApplicationWindow {
                     grid.currentIndex=(params.column-1)*gridModel.heightModel+params.row-1
                     grid.currentItem.backgroundCellAlias.state= params.state ? "PLAY" : ""
                  }
+                /*
                 onDisconnected: {
                     grid.enabled = false;
                     disconnectionPopup.opacity = 1
@@ -155,11 +180,12 @@ ApplicationWindow {
                     grid.enabled = true;
                     disconnectionPopup.opacity = 0
                 }
+                */
             }
         }
         Rectangle{
             id: disconnectionPopup
-            opacity: 1
+            opacity: grid.enabled ? 0 : 1
             anchors.centerIn: parent
             width: 300
             height: 100
