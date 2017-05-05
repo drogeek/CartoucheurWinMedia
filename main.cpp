@@ -20,6 +20,7 @@
 
 typedef unsigned int uint;
 
+void connectToWin(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options);
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -32,44 +33,41 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("Cartridge");
     OptionsXML options;
 
-    for(auto interface : QNetworkInterface::allInterfaces()){
-        if(!interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
-                interface.flags().testFlag(QNetworkInterface::IsUp)){
-            for(auto networkAdressEntry : interface.addressEntries()){
-                auto ip = networkAdressEntry.ip();
-                if(ip.protocol() == QAbstractSocket::IPv4Protocol){
-                    qDebug() << ip;
-                }
-            }
-        }
-    }
-
-    QTcpServer server;
-    server.listen(QHostAddress(LOCALIP),options.getPort());
-    QObject::connect(&options,&OptionsXML::portChanged,[&LOCALIP,&options,&server](){
-        server.listen(QHostAddress(LOCALIP),options.getPort());
-    });
-    qDebug() << server.errorString();
-
-    QQmlApplicationEngine engine;
     ClientNotifier notifier;
+    QQmlApplicationEngine engine;
 
-    QObject::connect(&server,&QTcpServer::newConnection,[&server,&notifier,&engine](){
-        qDebug() << "New connection";
-        QSharedPointer<QTcpSocket> socket(server.nextPendingConnection());
-        notifier.setSocket(socket);
-        QObject::connect(&(*socket),&QTcpSocket::disconnected, [&notifier](){
-            notifier.setConnected(false);
-        });
-        engine.rootContext()->setContextProperty("Notifier", &notifier);
+    QSharedPointer<QTcpServer> server(new QTcpServer());
+    connectToWin(server, &notifier, &options);
+    QObject::connect(&options,&OptionsXML::configChanged,[&LOCALIP,&options,&server,&notifier](){
+        if (server->isListening()){
+            notifier.disconnect();
+            server->close();
+            server = QSharedPointer<QTcpServer>(new QTcpServer());
+        }
+        connectToWin(server, &notifier, &options);
     });
 
     qmlRegisterType<CartridgeModel>("org.winmedia.guiennet",1,0,"CartridgeModel");
     qmlRegisterType<PanelModel>("org.winmedia.guiennet",1,0,"PanelModel");
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     engine.rootContext()->setContextProperty("Options", &options);
-    QObject* rootObject=engine.rootObjects()[0];
-//    QObject::connect(rootObject,SIGNAL(playerCommand(int,int,bool)),&notifier,SLOT(sendRami(int,int,bool)));
+    engine.rootContext()->setContextProperty("Notifier", &notifier);
 
     return app.exec();
+}
+
+
+void connectToWin(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options){
+    bool serverResp = server->listen(QHostAddress("127.0.0.1"),options->getPort());
+        if(serverResp){
+            QObject::connect(&(*server),&QTcpServer::newConnection,[server,notifier](){
+                qDebug() << "New connection";
+                QSharedPointer<QTcpSocket> socket(server->nextPendingConnection());
+                notifier->setSocket(socket);
+                QObject::connect(&(*socket),&QTcpSocket::disconnected, notifier, &ClientNotifier::disconnect);
+            });
+
+        }
+        else
+            qDebug() << server->errorString();
 }

@@ -25,6 +25,7 @@ AbstractNotifier::AbstractNotifier(){
 //    connect(this, &AbstractNotifier::newNotification,this,&AbstractNotifier::notification);
 //    connect(this,&AbstractNotifier::newQuery,this,&AbstractNotifier::query);
     setConnected(false);
+    connect(this,&AbstractNotifier::newRami,this,&AbstractNotifier::parseRami);
 //    emit disconnected();
 }
 
@@ -37,9 +38,7 @@ AbstractNotifier::AbstractNotifier(QSharedPointer<QTcpSocket> sock)
 void AbstractNotifier::setSocket(QSharedPointer<QTcpSocket> sock){
     m_sock = sock;
     qDebug() << "setSocket called";
-    qDebug() << m_sock;
     connect(&(*m_sock),&QTcpSocket::readyRead,this,&AbstractNotifier::parse);
-    connect(this,&AbstractNotifier::newRami,this,&AbstractNotifier::parseRami);
     setConnected(true);
 //    emit connected();
 }
@@ -50,6 +49,7 @@ void AbstractNotifier::parse(){
     auto list = arr.split('\n');
     for(auto i : list){
         qDebug() << "data received: " << i;
+        qDebug() << "from " << m_sock;
         auto jsonDoc = QJsonDocument::fromJson(i);
         qDebug() << "jsonDoc: " << jsonDoc;
         auto jsonObj = jsonDoc.object();
@@ -93,8 +93,13 @@ void AbstractNotifier::send(QJsonValue value, QString type, QString target){
     else if(value.isObject())
         result = wrapWithType(value.toObject(),type,target);
     //TODO: error?
-    qDebug() << "sending " << result.toJson();
-    m_sock->write(result.toJson(QJsonDocument::Compact)+'\n');
+    QWeakPointer<QTcpSocket> wp(m_sock);
+    QSharedPointer<QTcpSocket> sock = wp.toStrongRef();
+    if(sock){
+        qDebug() << "sending " << result.toJson();
+        qDebug() << "to " << sock;
+        sock->write(result.toJson(QJsonDocument::Compact)+'\n');
+    }
 }
 
 void AbstractNotifier::sendRami(int row, int column, bool state){
@@ -111,4 +116,15 @@ void AbstractNotifier::sendRami(QVariantMap params){
     int column = params["column"].toInt();
     bool state = params["state"].toBool();
     sendRami(row,column,state);
+}
+
+void AbstractNotifier::disconnect(){
+    qDebug() << "disconnecting notifier";
+//    m_sock.clear();
+//    QObject::disconnect(this,0,0,0);
+    QWeakPointer<QTcpSocket> wp(m_sock);
+    QSharedPointer<QTcpSocket> sock = wp.toStrongRef();
+    if(sock)
+        sock->abort();
+    setConnected(false);
 }

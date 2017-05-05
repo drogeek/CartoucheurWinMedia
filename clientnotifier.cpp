@@ -17,3 +17,4 @@ ClientNotifier::ClientNotifier(QSharedPointer<QTcpSocket> socket)
 //void ClientNotifier::notification(QString target,QJsonValue value){
 //    qDebug() << "notification received in client notifier";
 //}
+

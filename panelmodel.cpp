@@ -14,6 +14,7 @@ PanelModel::PanelModel(QObject *parent)
 
 void PanelModel::sendQuery(){
     m_notifier->send(QUERY,ClientNotifier::TYPE_DB,ClientNotifier::TARGET_PANEL);
+
 }
 
 QVariant PanelModel::data(const QModelIndex &index, int role) const

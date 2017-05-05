@@ -10,8 +10,7 @@ void OptionsXML::readConfig(){
     bool ok;
     qint16 port = m_options.value(OptionsXML::APPPORT).toInt(&ok);
     if(ok){
-        m_port = port;
-        emit portChanged();
+        setPort(port);
     }
     else
         qDebug() << "the port should be an integer";
