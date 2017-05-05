@@ -18,5 +18,21 @@ void OptionsXML::readConfig(){
 
 void OptionsXML::persistConfig(){
     m_options.setValue(OptionsXML::APPPORT,m_port);
-    emit portChanged();
+    emit configChanged();
+}
+
+QList<QString> OptionsXML::getLocalIps(){
+    QList<QString> res;
+    for(auto interface : QNetworkInterface::allInterfaces()){
+        if(!interface.flags().testFlag(QNetworkInterface::IsLoopBack) &&
+                interface.flags().testFlag(QNetworkInterface::IsUp)){
+            for(auto networkAdressEntry : interface.addressEntries()){
+                auto ip = networkAdressEntry.ip();
+                if(ip.protocol() == QAbstractSocket::IPv4Protocol){
+                    res << ip.toString();
+                }
+            }
+        }
+    }
+    return res;
 }

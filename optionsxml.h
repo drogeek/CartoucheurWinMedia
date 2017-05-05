@@ -13,6 +13,7 @@ class OptionsXML : public QObject
     Q_PROPERTY(qint16 port READ getPort WRITE setPort NOTIFY portChanged)
 public:
     OptionsXML();
+    Q_INVOKABLE QList<QString> getLocalIps();
 
 public slots:
     void persistConfig();
@@ -25,6 +26,7 @@ public slots:
 
 signals:
     void portChanged();
+    void configChanged();
 private:
     static const QString APPPORT;
     QSettings m_options;
