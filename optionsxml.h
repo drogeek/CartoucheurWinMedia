@@ -2,11 +2,10 @@
 #define OPTIONSXML_H
 
 #include <QObject>
-#include <QDomElement>
-#include <QDomDocument>
 #include <QFile>
 #include <QDebug>
 #include <QSettings>
+#include <QNetworkInterface>
 
 class OptionsXML : public QObject
 {

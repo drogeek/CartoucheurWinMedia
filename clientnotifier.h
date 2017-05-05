@@ -6,6 +6,7 @@
 class ClientNotifier : public AbstractNotifier
 {
     Q_OBJECT
+
 public:
     ClientNotifier();
     ClientNotifier(QSharedPointer<QTcpSocket> socket);

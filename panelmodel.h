@@ -33,8 +33,11 @@ public:
     void setNotifier(ClientNotifier* notifier){
         qDebug() << "notifier added to Panel";
         m_notifier = notifier;
-        sendQuery();
-        connect(m_notifier,&ClientNotifier::newQuery,this,&PanelModel::listFromJson);
+        connect(m_notifier, &ClientNotifier::connectedChanged,[this](){
+            if(m_notifier->connected())
+                sendQuery();
+        });
+        connect(m_notifier,&ClientNotifier::newQuery,this,&PanelModel::listFromJson,Qt::UniqueConnection);
     }
 
 protected:
