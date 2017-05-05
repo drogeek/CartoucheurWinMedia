@@ -33,7 +33,7 @@ ApplicationWindow {
                 id: optionsMenu
                 title: qsTr("settings")
                 x: Math.round((root.width - width) / 2)
-                y: Math.round(root.height / 6)
+                y: Math.round((root.height - height) / 2)
                 width: Math.round(Math.min(root.width, root.height) / 3 * 2)
                 modal: true
                 focus: true
@@ -43,20 +43,52 @@ ApplicationWindow {
                     Options.persistConfig();
                     optionsMenu.close()
                 }
+                Component.onCompleted: optionDialog.refreshLocalIps()
 
                 contentItem:
                 ColumnLayout{
-                    Label{
-                        text: qsTr("Server ip")
+                    id: optionDialog
+                    function refreshLocalIps(){
+                        localIps.clear()
+                        Options.getLocalIps().forEach(function(elem){
+                                localIps.append({cell: elem})
+                            })
                     }
-                    TextField{
-                        id: serveripinput
-                        inputMethodHints: Qt.ImhDigitsOnly
-//                        text: Options.serverIp
-                        Keys.onReturnPressed: {
-                            serverportinput.focus = true
+
+                    ListModel{
+                        id:localIps
+                        ListElement{
+                            cell: "127.0.0.1"
                         }
                     }
+
+                    Component{
+                        id:localIpsDelegate
+                        Item{
+                            height: 10
+                            Text{
+                                text: cell
+                            }
+                        }
+                    }
+
+                    Label{
+                        id: localIpsLabel
+                        text: qsTr("Local ip adresses")
+                    }
+                    Button{
+                        id: localIpsRefreshBtn
+                        text: qsTr("Refresh")
+                        onClicked: optionDialog.refreshLocalIps()
+                    }
+
+                    ListView{
+                        model: localIps
+                        height: 100
+                        delegate: localIpsDelegate
+                    }
+
+
 
                     Label{
                         text: qsTr("Server port")
