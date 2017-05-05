@@ -170,6 +170,10 @@ ApplicationWindow {
                     grid.currentIndex=(params.column-1)*gridModel.heightModel+params.row-1
                     grid.currentItem.backgroundCellAlias.state= params.state ? "PLAY" : ""
                  }
+                onNewError:{
+                    textErr.text = err
+                }
+
                 /*
                 onDisconnected: {
                     grid.enabled = false;
@@ -203,6 +207,29 @@ ApplicationWindow {
                 }
             }
         }
+    }
+    footer: Text{
+        id: textErr
+        onTextChanged: {
+            if(textErr.text != "")
+                timerErr.running = true
+        }
+        width: parent.width
+        horizontalAlignment: Text.AlignHCenter
+        font.bold: true
+        color: "red"
+        text: ""
+    }
+    Timer{
+        id: timerErr
+        property bool activated: false
+        running: false
+        onTriggered: {
+            textErr.text = ""
+            timerErr.running = false
+        }
+        repeat: false
+        interval: 4000
     }
 
 }
