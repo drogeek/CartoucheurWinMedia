@@ -37,6 +37,7 @@ public:
     static const QString TYPE_NOTIFY;
     static const QString TYPE_DB;
     static const QString TYPE_RAMI;
+    static const QString TYPE_ERR;
     static const QString TARGET_PANEL;
     static const QString TARGET_CARTRIDGE;
     static const QString RAMI_COLUMN;
@@ -58,6 +59,7 @@ signals:
     void newNotification(QString target,QJsonValue value);
     void newQuery(QString target,QJsonValue value);
     void newRami(QJsonValue value);
+    void newError(QString err);
     void commandReceived(QVariantMap params);
     void connectedChanged();
 //    void connected();
