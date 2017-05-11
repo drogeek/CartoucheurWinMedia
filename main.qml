@@ -11,8 +11,8 @@ ApplicationWindow {
     property alias gridModel: delegateModel.model
     id: root
     visible: true
-    width: 1360
-    height: 768
+    height: 685
+    width: 384
     title: qsTr("Cartridge")
 
     header:
@@ -26,7 +26,10 @@ ApplicationWindow {
                     verticalAlignment: Image.AlignVCenter
                     source: "images/menu.png"
                 }
-                onClicked: optionsMenu.open()
+                onClicked: {
+                    optionDialog.refreshLocalIps()
+                    optionsMenu.open()
+                }
             }
 
             Quick.Dialog{
@@ -43,7 +46,6 @@ ApplicationWindow {
                     Options.persistConfig();
                     optionsMenu.close()
                 }
-                Component.onCompleted: optionDialog.refreshLocalIps()
 
                 contentItem:
                 ColumnLayout{
@@ -57,9 +59,6 @@ ApplicationWindow {
 
                     ListModel{
                         id:localIps
-                        ListElement{
-                            cell: "127.0.0.1"
-                        }
                     }
 
                     Component{
@@ -111,6 +110,7 @@ ApplicationWindow {
             onCurrentIndexChanged: {
                 console.log("tab n°"+currentIndex+" selected")
                 console.log("id:"+panelItem.itemAt(currentIndex).idTab)
+                StateKeeper.clear()
                 gridModel.changePanel(panelItem.itemAt(currentIndex).idTab)
                 grid.state = ""
             }
@@ -168,8 +168,17 @@ ApplicationWindow {
                     console.log(params.column)
                     console.log(params.state)
                     grid.currentIndex=(params.column-1)*gridModel.heightModel+params.row-1
+                    var id = grid.currentItem.itemId
+                    if(params.state)
+                        StateKeeper.insert(id,grid.currentItem.timeDisplayAlias.currentTime)
+                    else
+                        StateKeeper.remove(id)
                     grid.currentItem.backgroundCellAlias.state= params.state ? "PLAY" : ""
                  }
+                onNewError:{
+                    textErr.text = err
+                }
+
                 /*
                 onDisconnected: {
                     grid.enabled = false;
@@ -203,6 +212,28 @@ ApplicationWindow {
                 }
             }
         }
+    }
+    footer: Text{
+        id: textErr
+        onTextChanged: {
+            if(textErr.text != "")
+                timerErr.running = true
+        }
+        width: parent.width
+        horizontalAlignment: Text.AlignHCenter
+        font.bold: true
+        color: "red"
+        text: ""
+    }
+    Timer{
+        id: timerErr
+        running: false
+        onTriggered: {
+            textErr.text = ""
+            timerErr.running = false
+        }
+        repeat: false
+        interval: 3000
     }
 
 }

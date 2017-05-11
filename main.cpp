@@ -16,11 +16,12 @@
 #include "connection.h"
 #include "clientnotifier.h"
 #include "optionsxml.h"
+#include "statekeeper.h"
 #define __WINMEDIA_DEBUG
 
 typedef unsigned int uint;
 
-void connectToWin(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options);
+void connectToDelegate(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options);
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -34,17 +35,18 @@ int main(int argc, char *argv[])
     OptionsXML options;
 
     ClientNotifier notifier;
+    StateKeeper statekeeper;
     QQmlApplicationEngine engine;
 
     QSharedPointer<QTcpServer> server(new QTcpServer());
-    connectToWin(server, &notifier, &options);
+    connectToDelegate(server, &notifier, &options);
     QObject::connect(&options,&OptionsXML::configChanged,[&LOCALIP,&options,&server,&notifier](){
         if (server->isListening()){
             notifier.disconnect();
             server->close();
             server = QSharedPointer<QTcpServer>(new QTcpServer());
         }
-        connectToWin(server, &notifier, &options);
+        connectToDelegate(server, &notifier, &options);
     });
 
     qmlRegisterType<CartridgeModel>("org.winmedia.guiennet",1,0,"CartridgeModel");
@@ -52,12 +54,13 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     engine.rootContext()->setContextProperty("Options", &options);
     engine.rootContext()->setContextProperty("Notifier", &notifier);
+    engine.rootContext()->setContextProperty("StateKeeper", &statekeeper);
 
     return app.exec();
 }
 
 
-void connectToWin(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options){
+void connectToDelegate(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options){
     bool serverResp = server->listen(QHostAddress("127.0.0.1"),options->getPort());
         if(serverResp){
             QObject::connect(&(*server),&QTcpServer::newConnection,[server,notifier](){
