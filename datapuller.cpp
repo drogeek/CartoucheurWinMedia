@@ -3,7 +3,7 @@
 DataPuller::DataPuller()
 {
     timer = new QTimer(this);
-    timer->setInterval(5000000);
+    timer->setInterval(5000);
     connect(timer,&QTimer::timeout,this,&DataPuller::updateData);
     timer->start();
 }

@@ -190,18 +190,29 @@ MouseArea{
                     return ("00"+x).slice(-2)
                 }
 
-                property var currentDuration : stop-start;
+                function getCurrentDuration(){
+                    if(StateKeeper.contains(id)){
+                        backgroundCell.state = "PLAY"
+                        return StateKeeper.get(id)
+                    }
+                    return stop-start;
+                }
+
+                property var currentDuration : getCurrentDuration();
                 property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
-//                font.pointSize: 18
+                font.pointSize: 11
                 text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
 
                 Timer{
+                    triggeredOnStart: true
                     running: backgroundCell.state == "PLAY"
                     onTriggered: {
                         var newDuration = timeDisplay.currentDuration-1000
-                        if(newDuration > 0)
+                        if(newDuration > 0){
                             timeDisplay.currentDuration=newDuration
+                            StateKeeper.insert(id,timeDisplay.currentDuration)
+                        }
                         else
                             timeDisplay.currentDuration=0
                     }

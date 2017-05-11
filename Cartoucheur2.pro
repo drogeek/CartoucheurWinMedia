@@ -12,7 +12,8 @@ SOURCES += main.cpp \
     connection.cpp \
     clientnotifier.cpp \
     abstractnotifier.cpp \
-    optionsxml.cpp
+    optionsxml.cpp \
+    statekeeper.cpp
 
 RESOURCES += qml.qrc
 
@@ -48,7 +49,8 @@ HEADERS += \
     connection.h \
     clientnotifier.h \
     abstractnotifier.h \
-    optionsxml.h
+    optionsxml.h \
+    statekeeper.h
 
 DISTFILES += \
     android/AndroidManifest.xml \
