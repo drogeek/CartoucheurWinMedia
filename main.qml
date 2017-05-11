@@ -11,8 +11,8 @@ ApplicationWindow {
     property alias gridModel: delegateModel.model
     id: root
     visible: true
-    width: 1360
-    height: 768
+    height: 685
+    width: 384
     title: qsTr("Cartridge")
 
     header:
@@ -26,7 +26,10 @@ ApplicationWindow {
                     verticalAlignment: Image.AlignVCenter
                     source: "images/menu.png"
                 }
-                onClicked: optionsMenu.open()
+                onClicked: {
+                    optionDialog.refreshLocalIps()
+                    optionsMenu.open()
+                }
             }
 
             Quick.Dialog{
@@ -43,7 +46,6 @@ ApplicationWindow {
                     Options.persistConfig();
                     optionsMenu.close()
                 }
-                Component.onCompleted: optionDialog.refreshLocalIps()
 
                 contentItem:
                 ColumnLayout{
@@ -57,9 +59,6 @@ ApplicationWindow {
 
                     ListModel{
                         id:localIps
-                        ListElement{
-                            cell: "127.0.0.1"
-                        }
                     }
 
                     Component{
@@ -228,14 +227,13 @@ ApplicationWindow {
     }
     Timer{
         id: timerErr
-        property bool activated: false
         running: false
         onTriggered: {
             textErr.text = ""
             timerErr.running = false
         }
         repeat: false
-        interval: 4000
+        interval: 3000
     }
 
 }
