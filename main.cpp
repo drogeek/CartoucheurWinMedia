@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
-    QString LOCALIP = "127.0.0.1";
+//    QString LOCALIP = "127.0.0.1";
 
     QCoreApplication::setOrganizationName("WinMedia");
     QCoreApplication::setOrganizationDomain("winmedia.org");
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     QSharedPointer<QTcpServer> server(new QTcpServer());
     connectToDelegate(server, &notifier, &options);
-    QObject::connect(&options,&OptionsXML::configChanged,[&LOCALIP,&options,&server,&notifier](){
+    QObject::connect(&options,&OptionsXML::configChanged,[&options,&server,&notifier](){
         if (server->isListening()){
             notifier.disconnect();
             server->close();
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 
 
 void connectToDelegate(QSharedPointer<QTcpServer> server, ClientNotifier* notifier, OptionsXML* options){
-    bool serverResp = server->listen(QHostAddress("127.0.0.1"),options->getPort());
+    bool serverResp = server->listen(QHostAddress(options->getIp()),options->getPort());
         if(serverResp){
             QObject::connect(&(*server),&QTcpServer::newConnection,[server,notifier](){
                 qDebug() << "New connection";

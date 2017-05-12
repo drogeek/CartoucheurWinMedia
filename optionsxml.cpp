@@ -1,6 +1,7 @@
 #include "optionsxml.h"
 
 const QString OptionsXML::APPPORT = "app/port";
+const QString OptionsXML::APPIP = "app/ip";
 OptionsXML::OptionsXML()
 {
     readConfig();
@@ -14,10 +15,12 @@ void OptionsXML::readConfig(){
     }
     else
         qDebug() << "the port should be an integer";
+    setIp(m_options.value(OptionsXML::APPIP).toString());
 }
 
 void OptionsXML::persistConfig(){
     m_options.setValue(OptionsXML::APPPORT,m_port);
+    m_options.setValue(OptionsXML::APPIP,m_ip);
     emit configChanged();
 }
 
@@ -34,5 +37,11 @@ QList<QString> OptionsXML::getLocalIps(){
             }
         }
     }
+    if(!res.contains(m_ip))
+        res.prepend(m_ip);
+    else{
+        res.swap(0,res.indexOf(m_ip));
+    }
+
     return res;
 }
