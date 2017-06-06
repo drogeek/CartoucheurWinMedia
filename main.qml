@@ -201,11 +201,14 @@ ApplicationWindow {
                     console.log(params.state)
                     grid.currentIndex=(params.column-1)*gridModel.heightModel+params.row-1
                     var id = grid.currentItem.itemId
-                    if(params.state)
+                    if(params.state){
+                        grid.currentItem.backgroundCellAlias.state = "PLAY"
                         StateKeeper.insert(id,grid.currentItem.timeDisplayAlias.currentTime)
-                    else
+                    }
+                    else{
+                        grid.currentItem.backgroundCellAlias.state = ""
                         StateKeeper.remove(id)
-                    grid.currentItem.backgroundCellAlias.state= params.state ? "PLAY" : ""
+                    }
                  }
                 onNewError:{
                     textErr.text = err
