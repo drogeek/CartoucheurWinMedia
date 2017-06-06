@@ -43,11 +43,8 @@ ApplicationWindow {
                 standardButtons: Dialog.Ok | Dialog.Cancel
                 onAccepted: {
                     Options.port = serverportinput.value
-<<<<<<< HEAD
                     console.log(localIpsList.currentItem.text)
                     Options.ip = localIpsList.currentItem.text
-=======
->>>>>>> b7753a0d111129fe449d0a13add242eb4a5148ba
                     Options.persistConfig();
                     optionsMenu.close()
                 }
@@ -68,7 +65,6 @@ ApplicationWindow {
 
                     Component{
                         id:localIpsDelegate
-<<<<<<< HEAD
                         MouseArea{
                             property string text : localIpsWrapperText.text
                             id: localIpsWrapper
@@ -82,13 +78,6 @@ ApplicationWindow {
                                 text: cell
                             }
                             onClicked: localIpsList.currentIndex = index
-=======
-                        Item{
-                            height: 10
-                            Text{
-                                text: cell
-                            }
->>>>>>> b7753a0d111129fe449d0a13add242eb4a5148ba
                         }
                     }
 
@@ -103,7 +92,6 @@ ApplicationWindow {
                     }
 
                     ListView{
-<<<<<<< HEAD
                         id: localIpsList
                         model: localIps
                         height: 100
@@ -112,11 +100,6 @@ ApplicationWindow {
                             color: "lightgray"
                             radius: 2
                         }
-=======
-                        model: localIps
-                        height: 100
-                        delegate: localIpsDelegate
->>>>>>> b7753a0d111129fe449d0a13add242eb4a5148ba
                     }
 
 
