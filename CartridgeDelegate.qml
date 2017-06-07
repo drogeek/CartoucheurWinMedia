@@ -79,32 +79,65 @@ MouseArea{
         height: grid.cellHeight-2
         width: grid.cellWidth-2
         radius: 5
-        property var backgroundcolorNORMAL: "#FAFAFA"
+        function decimalToHexString(number){
+            if (number < 0)
+            {
+                number = 0xFFFFFFFF + number + 1;
+            }
+
+            return "#"+number.toString(16).substring(2);
+        }
+        property var backgroundcolorNORMAL: decimalToHexString(backcolor)
         property var backgroundcolorDISABLED: "#AAAAAA"
         property var backgroundcolorINDICATOR: "#E65C00"
         property var backgroundcolorPLAY: "#FFB366"
         property var backgroundcolorPRESSED: "#eee"
-        color: !grid.enabled ? backgroundcolorDISABLED : backgroundcolorNORMAL
-        RadialGradient{
+        //color: !grid.enabled ? backgroundcolorDISABLED : backgroundcolorNORMAL
+        color:"lightgray"
+        Component.onCompleted: {
+            console.log(backcolor)
+            backgroundcolorNORMAL=decimalToHexString(color)
+        }
+        LinearGradient{
             id: buttonGradient
-            opacity: 0
+            opacity: backcolor ? 1 : 0
             anchors.centerIn: parent
-            width: parent.width-3
-            height: parent.height-3
+            width: parent.width-6
+            height: parent.height-6
             gradient: Gradient{
                 GradientStop{
-                    position: 0.9
-                    color: "#ddd"
+                    position: 1
+                    color: Qt.darker(backgroundCell.backgroundcolorNORMAL,1.5)
                 }
                 GradientStop{
-                    position: 0.3
-                    color: "#fff"
+                    position: 0
+                    color: Qt.lighter(backgroundCell.backgroundcolorNORMAL,1.5)
                 }
 
             }
         }
 
-        border.color: "#ccc"
+        LinearGradient{
+            id: buttonGradientPlay
+            opacity: 0
+            anchors.centerIn: parent
+            width: parent.width-6
+            height: parent.height-6
+            gradient: Gradient{
+                GradientStop{
+                    position: 1
+                    color: Qt.lighter(backgroundCell.backgroundcolorNORMAL,1.5)
+                }
+                GradientStop{
+                    position: 0
+                    color: Qt.darker(backgroundCell.backgroundcolorNORMAL,1.5)
+                }
+
+            }
+        }
+
+
+        border.color: "black"
 //        scale: state === "PLAY" ? 0.96 : 1.0
         transform: Scale{
             id: scaleButton
@@ -119,11 +152,13 @@ MouseArea{
         Rectangle{
             id: timeIndicator
             opacity: 0.3
-            color: parent.backgroundcolorINDICATOR
+            color: "black"
             radius: parent.radius
             anchors.verticalCenter: parent.verticalCenter
             height: parent.height-2
             width: parent.width-parent.width*timeDisplay.currentDuration/(stop-start)
+
+
             Behavior on width{
                 NumberAnimation{
                     easing.type: Easing.Linear
@@ -231,6 +266,8 @@ MouseArea{
                     return stop-start;
                 }
 
+
+
                 property var currentDuration : getCurrentDuration();
                 property var formatedHour : formateHour(currentDuration)
                 font.family: "Helvetica"
@@ -320,7 +357,7 @@ MouseArea{
                     easing.type: Easing.Linear
                 }
                 PropertyAnimation{
-                    target: buttonGradient
+                    target: buttonGradientPlay
                     properties: "opacity"
                     from: 0
                     to: 1
@@ -330,8 +367,8 @@ MouseArea{
                 PropertyAnimation{
                     target: backgroundCell
                     properties: "border.color"
-                    from: "#ccc"
-                    to: "#777"
+                    from: "black"
+                    to: "#eee"
                     duration: 300
                     easing.type: Easing.Linear
                 }
@@ -356,7 +393,7 @@ MouseArea{
                     easing.type: Easing.InOutBack
                 }
                 PropertyAnimation{
-                    target: buttonGradient
+                    target: buttonGradientPlay
                     properties: "opacity"
                     from: 1
                     to: 0
@@ -366,8 +403,8 @@ MouseArea{
                 PropertyAnimation{
                     target: backgroundCell
                     properties: "border.color"
-                    from: "#777"
-                    to: "#ccc"
+                    from: "#eee"
+                    to: "black"
                     duration: 300
                     easing.type: Easing.InOutBack
                 }

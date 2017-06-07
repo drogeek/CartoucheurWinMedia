@@ -31,7 +31,8 @@ public:
         START = Qt::UserRole+2,
         STOP = Qt::UserRole+3,
         STRETCH = Qt::UserRole+4,
-        ID = Qt::UserRole+5
+        ID = Qt::UserRole+5,
+        COLOR = Qt::UserRole+6
     };
 
     explicit CartridgeModel(QObject *parent = 0);

@@ -1,13 +1,17 @@
 #include "cartridgemodel.h"
 
 const QString CartridgeModel::QUERY=QString("\
-            SELECT Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge\
-            FROM [WinMedia].[dbo].[Cartridge],[WinMedia].[dbo].[Media],[WinMedia].[dbo].[Panel]\
+            SELECT Cartridge.Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge,Backcolor\
+            FROM [WinMedia].[dbo].[Cartridge],[WinMedia].[dbo].[Media],[WinMedia].[dbo].[Panel],[WinMedia].[dbo].[Belong],[WinMedia].[dbo].[Category]\
             WHERE Cartridge.Media = Media.IMedia\
+            AND Belong.media = Media.IMedia\
+            AND Belong.category = Category.ICategory\
+            AND getdate() between beginning and ending\
             AND Cartridge.Panel = Panel.IPanel\
             AND Panel.IPanel = %1\
             AND Cartridge.Position < %2\
-            ORDER BY Position");
+            ORDER BY Cartridge.Position");
+
 const QString CartridgeModel::SWAP=QString("\
             UPDATE [WinMedia].[dbo].[Cartridge] \
             SET Position = ( \
@@ -30,6 +34,7 @@ CartridgeModel::CartridgeModel(QObject *parent)
     m_roleNames[STRETCH]= "stretch";
     m_roleNames[TITLE]= "title";
     m_roleNames[ID]= "id";
+    m_roleNames[COLOR]= "backcolor";
 
     //TODO: recover from file
     setWidthModel(DEFAULT_WIDTH);
@@ -71,6 +76,7 @@ void CartridgeModel::listFromJson(QString target,QJsonValue value){
             hash.insert(STOP,obj["Stop"].toInt());
             hash.insert(STRETCH,obj["Stretch"].toDouble());
             hash.insert(ID,obj["ICartridge"].toInt());
+            hash.insert(COLOR,obj["Backcolor"].toInt());
             m_data.replace(position, hash);
         }
         while(m_data.count()<rowCount()){

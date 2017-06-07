@@ -147,6 +147,7 @@ ApplicationWindow {
     Rectangle{
         id: gridRect
         anchors.fill: parent
+        color:Qt.darker("lightgray",1.1)
 
         GridView{
             enabled: Notifier.connected
