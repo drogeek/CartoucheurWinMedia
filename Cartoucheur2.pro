@@ -63,4 +63,4 @@ DISTFILES += \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
-RC_ICONS = Logo-125px.ico
+RC_ICONS = logo125x125_WinConnect.png

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setOrganizationName("WinMedia");
     QCoreApplication::setOrganizationDomain("winmedia.org");
-    QCoreApplication::setApplicationName("Cartridge");
+    QCoreApplication::setApplicationName("WinConnect");
     OptionsXML options;
 
     ClientNotifier notifier;
