@@ -16,15 +16,22 @@ ApplicationWindow {
     title: qsTr("Cartridge")
 
     header:
-    RowLayout{
+    Row{
+        width: parent.width
         ToolBar{
-//            width: parent.width
+            z : 3
+            width:40
             ToolButton{
-                contentItem: Image {
-                    fillMode: Image.Pad
-                    horizontalAlignment: Image.AlignHCenter
-                    verticalAlignment: Image.AlignVCenter
-                    source: "images/menu.png"
+                contentItem: Rectangle{
+                    color: "white"
+                    anchors.fill: parent
+                    Image {
+                        anchors.centerIn: parent
+                        fillMode: Image.Pad
+                        horizontalAlignment: Image.AlignHCenter
+                        verticalAlignment: Image.AlignVCenter
+                        source: "images/menu.png"
+                    }
                 }
                 onClicked: {
                     optionDialog.refreshLocalIps()
@@ -121,7 +128,8 @@ ApplicationWindow {
 
         TabBar{
             id: tab
-//            width: parent.width
+            z : 2
+            width: root.width-40
             onCurrentIndexChanged: {
                 console.log("tab n°"+currentIndex+" selected")
                 console.log("id:"+panelItem.itemAt(currentIndex).idTab)

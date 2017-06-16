@@ -87,53 +87,163 @@ MouseArea{
 
             return "#"+number.toString(16).substring(2);
         }
-        property var backgroundcolorNORMAL: decimalToHexString(backcolor)
+        property var backgroundcolorNORMAL: backcolor != undefined ? decimalToHexString(backcolor) : "white"
         property var backgroundcolorDISABLED: "#AAAAAA"
         property var backgroundcolorINDICATOR: "#E65C00"
         property var backgroundcolorPLAY: "#FFB366"
         property var backgroundcolorPRESSED: "#eee"
-        //color: !grid.enabled ? backgroundcolorDISABLED : backgroundcolorNORMAL
-        color:"lightgray"
-        Component.onCompleted: {
-            console.log(backcolor)
-            backgroundcolorNORMAL=decimalToHexString(color)
-        }
-        LinearGradient{
-            id: buttonGradient
-            opacity: backcolor ? 1 : 0
-            anchors.centerIn: parent
+        property var backgroundcolorBLINK: "orange"
+        color: !grid.enabled ? backgroundcolorDISABLED : "lightgray"
+
+        Rectangle{
             width: parent.width-6
             height: parent.height-6
-            gradient: Gradient{
-                GradientStop{
-                    position: 1
-                    color: Qt.darker(backgroundCell.backgroundcolorNORMAL,1.5)
-                }
-                GradientStop{
-                    position: 0
-                    color: Qt.lighter(backgroundCell.backgroundcolorNORMAL,1.5)
-                }
-
-            }
-        }
-
-        LinearGradient{
-            id: buttonGradientPlay
-            opacity: 0
             anchors.centerIn: parent
-            width: parent.width-6
-            height: parent.height-6
-            gradient: Gradient{
-                GradientStop{
-                    position: 1
-                    color: Qt.lighter(backgroundCell.backgroundcolorNORMAL,1.5)
+            color: "#eee"
+
+            LinearGradient{
+                id: buttonGradient
+                opacity: backcolor ? 1 : 0
+                width: parent.width
+                height: parent.height
+                gradient: Gradient{
+                    GradientStop{
+                        position: 1
+                        color: Qt.darker(backgroundCell.backgroundcolorNORMAL,1.5)
+                    }
+                    GradientStop{
+                        position: 0
+                        color: Qt.lighter(backgroundCell.backgroundcolorNORMAL,1.5)
+                    }
+
                 }
-                GradientStop{
-                    position: 0
-                    color: Qt.darker(backgroundCell.backgroundcolorNORMAL,1.5)
+            }
+
+            LinearGradient{
+                id: buttonGradientPlay
+                opacity: backgroundCell.state == "PLAY" ? 1 : 0
+                anchors.centerIn: parent
+                width: parent.width
+                height: parent.height
+                gradient: Gradient{
+                    GradientStop{
+                        position: 1
+                        color: Qt.lighter(backgroundCell.backgroundcolorNORMAL,1.5)
+                    }
+                    GradientStop{
+                        position: 0
+                        color: Qt.darker(backgroundCell.backgroundcolorNORMAL,1.5)
+                    }
+
+                }
+                Rectangle{
+                    id: timeIndicator
+                    opacity: 0.4
+                    color: "#222"
+                    radius: 4
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: parent.height
+                    width: parent.width-parent.width*timeDisplay.currentDuration/(stop-start)
+
+
+                    Behavior on width{
+                        NumberAnimation{
+                            easing.type: Easing.Linear
+                            easing.amplitude: 2
+                            duration: stretch ? 1000/stretch : 1000
+                        }
+                    }
+                }
+                Rectangle{
+                    id: blinkIndicator
+                    opacity: 0
+                    anchors.fill: parent
+                    color: backcolor
+                }
+           }
+            Column{
+                id: textColumn
+                width: parent.width
+                property string textcolor: "#111"
+
+                Text{
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: textColumn.textcolor
+                    width: parent.width
+                    elide: Text.ElideRight
+                    fontSizeMode: Text.HorizontalFit
+                    text: performer ? "<b>"+performer+"</b>" : ""
                 }
 
+                Text{
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: textColumn.textcolor
+                    width: parent.width
+                    elide: Text.ElideRight
+                    fontSizeMode: Text.HorizontalFit
+                    text: title ? title : ""
+                }
+
+                Text{
+                    id: timeDisplay
+                    color: textColumn.textcolor
+                    x:15
+                    width: parent.width-15
+                    fontSizeMode: Text.HorizontalFit
+
+                    function formateHour(s){
+                        var milliToSec=Math.floor(s/1000)
+                        var sec=milliToSec%60
+                        var min=Math.floor(milliToSec/60)
+                        var hour=Math.floor(min/60)
+                        return {
+                            sec: padding(sec),
+                            min: padding(min),
+                            hour: padding(hour)
+                        }
+                    }
+
+                    function padding(x){
+                        return ("00"+x).slice(-2)
+                    }
+
+                    function getCurrentDuration(){
+                        if(StateKeeper.contains(id)){
+                            backgroundCell.state = "PLAY"
+                            //TODO: try to do something less disgusting bellow…
+                            return StateKeeper.get(id)
+                        }
+                        return stop-start;
+                    }
+
+
+
+                    property var currentDuration : getCurrentDuration();
+                    property var formatedHour : formateHour(currentDuration)
+                    font.family: "Helvetica"
+                    font.pointSize: 11
+                    text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
+
+                    Timer{
+                        triggeredOnStart: true
+                        running: backgroundCell.state == "PLAY"
+                        onTriggered: {
+                            var newDuration = timeDisplay.currentDuration-1000
+                            if(newDuration > 0){
+                                timeDisplay.currentDuration=newDuration
+                                StateKeeper.insert(id,timeDisplay.currentDuration)
+                            }
+                            else
+                                timeDisplay.currentDuration=0
+                        }
+                        interval: 1000/stretch
+                        repeat: true
+                    }
+                }
+
+
             }
+
         }
 
 
@@ -149,24 +259,7 @@ MouseArea{
 
 
 
-        Rectangle{
-            id: timeIndicator
-            opacity: 0.3
-            color: "black"
-            radius: parent.radius
-            anchors.verticalCenter: parent.verticalCenter
-            height: parent.height-2
-            width: parent.width-parent.width*timeDisplay.currentDuration/(stop-start)
 
-
-            Behavior on width{
-                NumberAnimation{
-                    easing.type: Easing.Linear
-                    easing.amplitude: 2
-                    duration: stretch ? 1000/stretch : 1000
-                }
-            }
-        }
 
         SequentialAnimation{
             loops: Animation.Infinite
@@ -218,81 +311,6 @@ MouseArea{
             }
         }
 
-        Column{
-            width: parent.width
-
-            Text{
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width
-                elide: Text.ElideRight
-                fontSizeMode: Text.HorizontalFit
-                text: performer ? "<b>"+performer+"</b>" : ""
-            }
-
-            Text{
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width
-                elide: Text.ElideRight
-                fontSizeMode: Text.HorizontalFit
-                text: title ? title : ""
-            }
-
-            Text{
-                id: timeDisplay
-                width: parent.width
-                fontSizeMode: Text.HorizontalFit
-
-                function formateHour(s){
-                    var milliToSec=Math.floor(s/1000)
-                    var sec=milliToSec%60
-                    var min=Math.floor(milliToSec/60)
-                    var hour=Math.floor(min/60)
-                    return {
-                        sec: padding(sec),
-                        min: padding(min),
-                        hour: padding(hour)
-                    }
-                }
-
-                function padding(x){
-                    return ("00"+x).slice(-2)
-                }
-
-                function getCurrentDuration(){
-                    if(StateKeeper.contains(id)){
-                        backgroundCell.state = "PLAY"
-                        return StateKeeper.get(id)
-                    }
-                    return stop-start;
-                }
-
-
-
-                property var currentDuration : getCurrentDuration();
-                property var formatedHour : formateHour(currentDuration)
-                font.family: "Helvetica"
-                font.pointSize: 11
-                text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
-
-                Timer{
-                    triggeredOnStart: true
-                    running: backgroundCell.state == "PLAY"
-                    onTriggered: {
-                        var newDuration = timeDisplay.currentDuration-1000
-                        if(newDuration > 0){
-                            timeDisplay.currentDuration=newDuration
-                            StateKeeper.insert(id,timeDisplay.currentDuration)
-                        }
-                        else
-                            timeDisplay.currentDuration=0
-                    }
-                    interval: 1000/stretch
-                    repeat: true
-                }
-            }
-
-
-        }
 
 //        Row{
 //            id: controlRow
@@ -336,6 +354,16 @@ MouseArea{
             }
 
         ]
+        PropertyAnimation{
+            target: blinkIndicator
+            running: backgroundCell.state == "PLAY"
+            properties:  "opacity"
+            loops: Animation.Infinite
+            from: 0.0
+            to: 0.4
+            duration: 1000 / stretch
+            easing.type: Easing.InOutBack
+        }
         transitions: [
             Transition {
                 from: ""
@@ -356,14 +384,7 @@ MouseArea{
                     duration: 300
                     easing.type: Easing.Linear
                 }
-                PropertyAnimation{
-                    target: buttonGradientPlay
-                    properties: "opacity"
-                    from: 0
-                    to: 1
-                    duration: 300
-                    easing.type: Easing.Linear
-                }
+
                 PropertyAnimation{
                     target: backgroundCell
                     properties: "border.color"
