@@ -2,13 +2,10 @@
 
 const QString CartridgeModel::QUERY=QString("\
             SELECT Cartridge.Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge,Backcolor\
-            FROM [WinMedia].[dbo].[Cartridge],[WinMedia].[dbo].[Media],[WinMedia].[dbo].[Panel],[WinMedia].[dbo].[Belong],[WinMedia].[dbo].[Category]\
+            FROM [WinMedia].[dbo].[Cartridge],[WinMedia].[dbo].[Media],[WinMedia].[dbo].[Panel],[WinMedia].[dbo].[Category]\
             WHERE Cartridge.Media = Media.IMedia\
-            AND Belong.media = Media.IMedia\
-            AND Belong.category = Category.ICategory\
-            AND getdate() between beginning and ending\
-            AND Cartridge.Panel = Panel.IPanel\
-            AND Panel.IPanel = %1\
+            AND Cartridge.category = Category.ICategory\
+            AND Cartridge.Panel = %1\
             AND Cartridge.Position < %2\
             ORDER BY Cartridge.Position");
 

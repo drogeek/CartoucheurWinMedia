@@ -28,7 +28,6 @@ MouseArea{
     }
 
     onClicked: {
-        //TODO: playerstate necessary?
         var nextState = backgroundCell.state === "PLAY" ? false : true
         Notifier.sendRami((index)%gridModel.heightModel + 1,Math.floor((index)/gridModel.heightModel) + 1,nextState)
     }
