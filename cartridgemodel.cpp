@@ -1,7 +1,7 @@
 #include "cartridgemodel.h"
 
 const QString CartridgeModel::QUERY=QString("\
-            SELECT Cartridge.Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge,Backcolor\
+            SELECT Cartridge.Position,Performer,Title,Cartridge.Start,Cartridge.Stop,Cartridge.Stretch,ICartridge,Cartridge.Genre,Backcolor\
             FROM [WinMedia].[dbo].[Cartridge],[WinMedia].[dbo].[Media],[WinMedia].[dbo].[Panel],[WinMedia].[dbo].[Category]\
             WHERE Cartridge.Media = Media.IMedia\
             AND Cartridge.category = Category.ICategory\
@@ -32,6 +32,7 @@ CartridgeModel::CartridgeModel(QObject *parent)
     m_roleNames[TITLE]= "title";
     m_roleNames[ID]= "id";
     m_roleNames[COLOR]= "backcolor";
+    m_roleNames[GENRE]= "genre";
 
     //TODO: recover from file
     setWidthModel(DEFAULT_WIDTH);
@@ -74,6 +75,7 @@ void CartridgeModel::listFromJson(QString target,QJsonValue value){
             hash.insert(STRETCH,obj["Stretch"].toDouble());
             hash.insert(ID,obj["ICartridge"].toInt());
             hash.insert(COLOR,obj["Backcolor"].toInt());
+            hash.insert(GENRE,obj["Genre"].toInt());
             m_data.replace(position, hash);
         }
         while(m_data.count()<rowCount()){

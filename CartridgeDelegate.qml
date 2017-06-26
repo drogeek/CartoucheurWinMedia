@@ -95,6 +95,7 @@ MouseArea{
         color: !grid.enabled ? backgroundcolorDISABLED : "lightgray"
 
         Rectangle{
+            id: backgroundCellInner
             width: parent.width-6
             height: parent.height-6
             anchors.centerIn: parent
@@ -217,9 +218,11 @@ MouseArea{
 
 
 
+
+
                     property var currentDuration : getCurrentDuration();
                     property var formatedHour : formateHour(currentDuration)
-                    font.family: "Helvetica"
+                    font.family: "Times"
                     font.pointSize: 11
                     text: stop ? "<b><i>"+ formatedHour.hour + ":" + formatedHour.min + ":" + formatedHour.sec + "</i></b>" : ""
 
@@ -240,8 +243,57 @@ MouseArea{
                     }
                 }
 
-
             }
+            Text{
+                    function convertGenre(x){
+                        if(x === 0)
+                            return "Start"
+                        else if(x === 1)
+                            return "Loop"
+                        else if(x === 2)
+                            return "Intro"
+                        else if(x === 3)
+                            return "Hook"
+                    }
+                    function splitGenre(x){
+                        if(x >= 8){
+                            console.log("loop activated")
+                            x-= 8
+                            genreDisplay.isLoop = true
+                        }
+                        if(x >= 4){
+                            console.log("lock activated")
+                            x-=4
+                            genreDisplay.isLock = true
+                        }
+                        console.log(x)
+                        genreDisplay.genreRemaining = x
+                    }
+
+                    property bool isLoop: false
+                    property bool isLock: false
+                    property int genreRemaining: undefined
+                    id: genreDisplay
+                    font.family: "Times"
+                    anchors.bottom: parent.bottom
+                    x: (parent.width-width)/2
+                    text: genre !== undefined ? "<b>"+convertGenre(genreRemaining)+"</b>" : ""
+            }
+            Image {
+                id: imageLock
+                anchors.bottom:  genreDisplay.bottom
+                anchors.left: genreDisplay.right
+                opacity: genreDisplay.isLock ? 1 : 0
+                source: "lock.png"
+            }
+            Image {
+                id: imageLoop
+                anchors.bottom:  imageLock.bottom
+                anchors.left: imageLock.right
+                opacity: genreDisplay.isLoop ? 1 : 0
+                source: "loop.png"
+            }
+            Component.onCompleted: genreDisplay.splitGenre(genre)
 
         }
 

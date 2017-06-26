@@ -7,5 +7,7 @@
         <file>images/menu@3x.png</file>
         <file>images/menu@4x.png</file>
         <file>settings.conf</file>
+        <file>loop.png</file>
+        <file>lock.png</file>
     </qresource>
 </RCC>
