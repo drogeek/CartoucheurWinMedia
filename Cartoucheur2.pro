@@ -1,6 +1,7 @@
 QT += qml quick
 QT += sql widgets
 QT += xml
+android: QT += androidextras
 
 CONFIG += c++11
 
@@ -59,7 +60,8 @@ DISTFILES += \
     android/res/values/libs.xml \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew.bat
+    android/gradlew.bat \
+    android/src/KeepScreenWakeUp.java
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

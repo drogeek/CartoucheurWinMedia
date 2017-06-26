@@ -11,6 +11,7 @@
 #include <QNetworkInterface>
 #include <QTimer>
 #include <fstream>
+#include <QAndroidJniObject>
 #include "panelmodel.h"
 #include "cartridgemodel.h"
 #include "ramiProtocol.h"
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("winmedia.org");
     QCoreApplication::setApplicationName("WinConnect");
     OptionsXML options;
+    QAndroidJniObject::callStaticMethod<void>("KeepScreenWakeUp", "WakeUp");
 
     ClientNotifier notifier;
     StateKeeper statekeeper;
